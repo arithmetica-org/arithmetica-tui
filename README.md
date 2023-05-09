@@ -24,11 +24,11 @@ Arithmetica can also evaluate expressions:
 And if you ever need to add or multiply something 'by hand' again, arithmetica can help with that too!
 
 <div align='left'>
-  <img width="auto" height="250" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/e9901a79-3ec1-45c0-8865-8acbe0dca4d3'>
-  <img width="auto" height="250" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/ffed3e6a-d253-445b-b35f-5b6046512f08'>
+  <img width="auto" height="200" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/e9901a79-3ec1-45c0-8865-8acbe0dca4d3'>
+  <img width="auto" height="200" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/ffed3e6a-d253-445b-b35f-5b6046512f08'>
 </div>
 
 <div align='rught'>
-  <img width="auto" height="250" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/5a5f56fa-ff49-468c-983a-98395bbdf84e'>
-  <img width="auto" height="250" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/2ea3fcc6-4e03-4ca6-82b2-9637bebe893c'>
+  <img width="auto" height="200" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/5a5f56fa-ff49-468c-983a-98395bbdf84e'>
+  <img width="auto" height="200" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/2ea3fcc6-4e03-4ca6-82b2-9637bebe893c'>
 </div>
