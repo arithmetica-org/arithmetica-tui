@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/avighna/Desktop/arithmetica-tui/build/src",
+  "command": "/usr/bin/clang++   -g -o CMakeFiles/arithmetica-tui.dir/main.cpp.o -c /home/avighna/Desktop/arithmetica-tui/src/main.cpp",
+  "file": "/home/avighna/Desktop/arithmetica-tui/src/main.cpp"
+},
+{
+  "directory": "/home/avighna/Desktop/arithmetica-tui/build/src",
+  "command": "/usr/bin/clang++   -g -o CMakeFiles/arithmetica-tui.dir/factor_polynomial.cpp.o -c /home/avighna/Desktop/arithmetica-tui/src/factor_polynomial.cpp",
+  "file": "/home/avighna/Desktop/arithmetica-tui/src/factor_polynomial.cpp"
+}
+]

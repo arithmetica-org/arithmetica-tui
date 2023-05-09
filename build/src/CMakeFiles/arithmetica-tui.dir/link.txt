@@ -1,0 +1,1 @@
+/usr/bin/clang++ -g -rdynamic CMakeFiles/arithmetica-tui.dir/main.cpp.o CMakeFiles/arithmetica-tui.dir/factor_polynomial.cpp.o -o arithmetica  -larithmetica -lbasic_math_operations 
