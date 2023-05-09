@@ -1,5 +1,0 @@
-/home/avighna/Desktop/arithmetica-tui/build/CMakeFiles/edit_cache.dir
-/home/avighna/Desktop/arithmetica-tui/build/CMakeFiles/rebuild_cache.dir
-/home/avighna/Desktop/arithmetica-tui/build/src/CMakeFiles/arithmetica-tui.dir
-/home/avighna/Desktop/arithmetica-tui/build/src/CMakeFiles/edit_cache.dir
-/home/avighna/Desktop/arithmetica-tui/build/src/CMakeFiles/rebuild_cache.dir
