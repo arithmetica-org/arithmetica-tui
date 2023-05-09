@@ -29,6 +29,6 @@ And if you ever need to add or multiply something 'by hand' again, arithmetica c
 </div>
 
 <div align='rught'>
-  <img width="auto" height="160" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/5a5f56fa-ff49-468c-983a-98395bbdf84e'>
-  <img width="auto" height="160" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/2ea3fcc6-4e03-4ca6-82b2-9637bebe893c'>
+  <img width="auto" height="180" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/5a5f56fa-ff49-468c-983a-98395bbdf84e'>
+  <img width="auto" height="180" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/2ea3fcc6-4e03-4ca6-82b2-9637bebe893c'>
 </div>
