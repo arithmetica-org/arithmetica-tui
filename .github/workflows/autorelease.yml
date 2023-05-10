@@ -11,9 +11,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Retrieve the latest version from the GitHub API.
-      run: LATEST_TAG=$(curl -s "https://api.github.com/repos/avighnac/arithmetica-tui/releases/latest" | jq -r '.tag_name')
+      run: |
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/avighnac/arithmetica-tui/releases/latest" | jq -r '.tag_name')
+        echo $LATEST_TAG
     - name: Calculate the autorelease number with the help of the GitHub API.
       run: |
+        echo https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD
         GITHUB_API_URL=$(echo https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD)
         echo ${{ env.GITHUB_API_URL }}
         AUTORELEASE_NO=$(curl -s ${{ env.GITHUB_API_URL }} | jq -r '.total_commits')
