@@ -302,7 +302,8 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
   }
   successfully_divided.clear();
   factors.push_back(frac_coefficients);
-  string_factors.push_back("(" + form_printable_polynomial(frac_coefficients, variable) + ")");
+  string_factors.push_back(
+      "(" + form_printable_polynomial(frac_coefficients, variable) + ")");
 
   if (answer.empty()) {
     answer += form_printable_polynomial(frac_coefficients, variable);
@@ -328,7 +329,9 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
     for (auto &j : partial_steps) {
       std::string full_step = "(" + j + ")";
       for (auto k = i + 1; k < string_factors.size(); ++k) {
-        full_step += string_factors[k];
+        if (string_factors[k] != "(1)") {
+          full_step += string_factors[k];
+        }
       }
       steps.push_back(full_step);
     }
