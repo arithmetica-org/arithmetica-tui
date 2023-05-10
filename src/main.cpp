@@ -184,7 +184,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
-std::string version = "0.1.3";
+std::string version = "0.1.4";
 
 std::string autorelease = "0";
 
@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
       std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_bleeding_edge.sh | sudo bash &");
       std::exit(0);
     }
-    if (std::string(argv[1]) == "--update-stable") {
+    if (std::string(argv[1]) == "--update-stable" || std::string(argv[1]) == "--update") {
       std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_stable.sh | sudo bash &");
       std::exit(0);
     }
