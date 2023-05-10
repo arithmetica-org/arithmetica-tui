@@ -1,5 +1,5 @@
 # arithmetica-tui
-A command-line wrapper for the arithmetica library.
+A command-line wrapper for the (arithmetica library)[https://github.com/avighnac/arithmetica].
 
 # Installation
 ```
