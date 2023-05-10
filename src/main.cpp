@@ -336,6 +336,7 @@ int main(int argc, char **argv) {
 
   bool show_steps = false;
   bool degree_mode = true;
+  bool enable_fractions_eval = true;
 
   std::vector<std::string> history;
   int history_index = -1; // Current history item
@@ -444,6 +445,8 @@ int main(int argc, char **argv) {
                   << "\n";
         std::cout << "  degreemode - " << (degree_mode ? "enabled" : "disabled")
                   << "\n";
+        std::cout << "  fractionseval (enable fractions during eval) - "
+                  << (enable_fractions_eval ? "enabled" : "disabled") << "\n";
         std::cout << "  accuracy - " << accuracy
                   << ", change with accuracy <num>\n\n";
         continue;
@@ -471,6 +474,13 @@ int main(int argc, char **argv) {
     if (input == "exit" || input == "quit") {
       break;
     }
+    if (input == "fractionseval") {
+      enable_fractions_eval = !enable_fractions_eval;
+      std::cout << "fractions are now "
+                << (enable_fractions_eval ? "displayed" : "not disabled")
+                << " in eval\n";
+      continue;
+    }
     if (input.substr(0, 4) == "asin" || input.substr(0, 6) == "arcsin" ||
         input.substr(0, 4) == "acos" || input.substr(0, 6) == "arccos" ||
         input.substr(0, 4) == "atan" || input.substr(0, 6) == "arctan") {
@@ -486,12 +496,13 @@ int main(int argc, char **argv) {
           "Example usage: arctan 1 ==> 45\u00b0 = 0.785398 rad"};
 
       if (tokens.size() == 1) {
-        std::cout << "Example usage: " << example_usages[is_acos + 2 * is_atan] << "\n";
+        std::cout << "Example usage: " << example_usages[is_acos + 2 * is_atan]
+                  << "\n";
         continue;
       }
       std::string num = tokens[1];
-      std::cout << " ==> "
-                <<  functions[is_acos + 2 * is_atan] << "(" << num << ") = ";
+      std::cout << " ==> " << functions[is_acos + 2 * is_atan] << "(" << num
+                << ") = ";
       std::string answer;
 
       if (is_acos) {
@@ -606,8 +617,12 @@ int main(int argc, char **argv) {
       std::string result =
           arithmetica::simplify_arithmetic_expression(expression, 1, accuracy);
       std::vector<std::string> to_print = {
-          arithmetica::simplify_arithmetic_expression(result, 0, accuracy),
-          result, arithmetica::simplify_arithmetic_expression(result, 2, 0)};
+          arithmetica::simplify_arithmetic_expression(result, 0, accuracy)};
+      if (enable_fractions_eval) {
+        to_print.push_back(result);
+        to_print.push_back(
+            arithmetica::simplify_arithmetic_expression(result, 2, 0));
+      }
       // remove duplicates from to_print
       to_print.erase(std::unique(to_print.begin(), to_print.end()),
                      to_print.end());
