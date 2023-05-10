@@ -12,8 +12,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE arithmetica)
 target_link_libraries(${PROJECT_NAME} PRIVATE basic_math_operations)
 
 if (BUILD_RELEASE)
-    # Add '-static-libstdc++ -static-libgcc' compiler flags
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+    # Add '-static -static-libstdc++ -static-libgcc' compiler flags
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static -static-libstdc++ -static-libgcc")
 endif()
 
 # Rename target to 'arithmetica'

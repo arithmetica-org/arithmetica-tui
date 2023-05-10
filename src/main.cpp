@@ -2,7 +2,21 @@
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
 #include <iostream>
+#include <termios.h>
+#include <unistd.h>
 #include <vector>
+
+// Get a single character from the console without echo or buffering
+char getch() {
+  struct termios oldt, newt;
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  char c = getchar();
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  return c;
+}
 
 std::string center(std::string str, size_t n) {
   return std::string((n - str.length()) / 2, ' ') + str;
@@ -158,7 +172,7 @@ namespace arithmetica_factor_polynomial {
 std::string factor_polynomial(std::string expr);
 };
 
-std::string version = "0.1.0";
+std::string version = "0.1.1";
 
 int main(int argc, char **argv) {
   using namespace basic_math_operations;
@@ -183,10 +197,58 @@ int main(int argc, char **argv) {
 
   bool show_steps = false;
 
+  std::vector<std::string> history;
+  int history_index = -1; // Current history item
+
   while (true) {
+
+    ++history_index;
+    history.push_back("");
     std::string input;
     std::cout << "arithmetica> ";
-    std::getline(std::cin, input);
+    char c;
+    while ((c = getch()) != '\n') {
+      if (c == 27) { // Escape character (arrow key)
+        c = getch();
+        if (c == 91) { // Left square bracket
+          c = getch();
+          if (c == 65) { // Up arrow
+            if (history_index != 0) {
+              history_index--;
+            }
+            input = history[history_index];
+            std::cout << "\33[2K\rarithmetica> " << input;
+          } else if (c == 66) { // Down arrow
+            if (history_index < history.size() - 1) {
+              history_index++;
+            }
+            input = history[history_index];
+            std::cout << "\33[2K\rarithmetica> " << input;
+          }
+        }
+      } else if (c == 127 || c == 8) { // Backspace/delete
+        if (!input.empty()) {
+          input.pop_back();
+          std::cout << "\b \b";
+        }
+      } else {
+        input += c;
+        std::cout << c;
+      }
+    }
+
+    // Don't add consecutive duplicates or empty strings to history
+    if (input.empty() ||
+        (history.size() >= 2 && history[history.size() - 2] == input)) {
+      history.pop_back();
+    } else {
+      history[history.size() - 1] = input;
+    }
+
+    history_index = history.size() - 1;
+
+    std::cout << "\n";
+
     // remove front and back whitespace
     input.erase(0, input.find_first_not_of(' '));
     input.erase(input.find_last_not_of(' ') + 1);
