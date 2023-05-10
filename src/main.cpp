@@ -17,6 +17,46 @@ static void replace_all(std::string &str, const std::string &from,
   }
 }
 
+std::string round_decimal(std::string decimal, int n) {
+  // Find the position of the decimal point
+  size_t decimal_pos = decimal.find('.');
+  if (decimal_pos == std::string::npos) {
+    // The decimal has no decimal point
+    return decimal;
+  }
+  // Find the number of decimal places to keep
+  size_t end_pos = decimal_pos + n + 1;
+  if (end_pos >= decimal.size()) {
+    // The decimal has fewer than n decimal places
+    return decimal;
+  }
+  // Round the decimal to n places
+  int round_digit = decimal[end_pos] - '0';
+  if (round_digit >= 5) {
+    // Round up the last decimal place
+    int carry = 1;
+    for (int i = end_pos - 1; i >= 0; i--) {
+      if (decimal[i] == '.') {
+        continue;
+      }
+      int digit = decimal[i] - '0' + carry;
+      carry = digit / 10;
+      digit %= 10;
+      decimal[i] = digit + '0';
+      if (carry == 0) {
+        break;
+      }
+    }
+    if (carry != 0) {
+      // Insert a new digit before the decimal point
+      decimal.insert(decimal.begin() + decimal_pos, carry + '0');
+      decimal_pos++;
+    }
+  }
+  // Truncate the decimal to n places
+  return basic_math_operations::add(decimal.substr(0, end_pos), "0");
+}
+
 // Get a single character from the console without echo or buffering
 char getch() {
   struct termios oldt, newt;
@@ -194,6 +234,39 @@ int main(int argc, char **argv) {
   using namespace basic_math_operations;
   using namespace arithmetica;
 
+  std::string pi =
+      "3."
+      "141592653589793238462643383279502884197169399375105820974944592307816406"
+      "286208998628034825342117067982148086513282306647093844609550582231725359"
+      "408128481117450284102701938521105559644622948954930381964428810975665933"
+      "446128475648233786783165271201909145648566923460348610454326648213393607"
+      "260249141273724587006606315588174881520920962829254091715364367892590360"
+      "011330530548820466521384146951941511609433057270365759591953092186117381"
+      "932611793105118548074462379962749567351885752724891227938183011949129833"
+      "673362440656643086021394946395224737190702179860943702770539217176293176"
+      "752384674818467669405132000568127145263560827785771342757789609173637178"
+      "721468440901224953430146549585371050792279689258923542019956112129021960"
+      "864034418159813629774771309960518707211349999998372978049951059731732816"
+      "096318595024459455346908302642522308253344685035261931188171010003137838"
+      "752886587533208381420617177669147303598253490428755468731159562863882353"
+      "7875937519577818577805321712268066130019278766111959092164201989";
+  std::string inverse_pi =
+      "0."
+      "318309886183790671537767526745028724068919291480912897495334688117793595"
+      "268453070180227605532506171912145685453515916073785823692229157305755934"
+      "821463399678458479933874818155146155492793850615377434785792434795323386"
+      "724780483447258023664760228445399511431880923780173805347912240978821873"
+      "875688171057446199892886800497344695478919221796646193566149812333972925"
+      "609398897304375763149573133928482077991748278697219967736198399924885751"
+      "170342357716862235037534321093095073976019478920729518667536118604988993"
+      "270610654313551006440649555632794332045893496239196331681212033606071996"
+      "267823974997665573308870559510140032481355128777699142621760244398752295"
+      "362755529475781266136092915956963522624854628139921550049000595519714178"
+      "113805593570263050420032635492041849623212481122912406292968178496918382"
+      "870423150815112401743053213604434318281514949165445195492570799750310658"
+      "781627963544818716509594146657438081399951815315415698694078717965617434"
+      "6851280733790233250914118866552625373000522454359423064225199009";
+
   std::vector<std::string> functions = {"eval", "add", "mul", "factor"};
 
   //   std::cout << "Welcome to arithmetica, the command line wrapper for the "
@@ -228,16 +301,18 @@ int main(int argc, char **argv) {
       return 0;
     }
     if (std::string(argv[1]) == "--update-bleeding-edge") {
-      std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-                  "https://api.github.com/repos/avighnac/arithmetica-tui/"
-                  "contents/install_bleeding_edge.sh | sudo bash &");
+      int n =
+          std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
+                      "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                      "contents/install_bleeding_edge.sh | sudo bash &");
       std::exit(0);
     }
     if (std::string(argv[1]) == "--update-stable" ||
         std::string(argv[1]) == "--update") {
-      std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-                  "https://api.github.com/repos/avighnac/arithmetica-tui/"
-                  "contents/install_stable.sh | sudo bash &");
+      int n =
+          std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
+                      "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                      "contents/install_stable.sh | sudo bash &");
       std::exit(0);
     }
   }
@@ -260,6 +335,7 @@ int main(int argc, char **argv) {
   std::cout << "If you don't like reading helps, type quickstart instead.\n";
 
   bool show_steps = false;
+  bool degree_mode = true;
 
   std::vector<std::string> history;
   int history_index = -1; // Current history item
@@ -353,10 +429,15 @@ int main(int argc, char **argv) {
         std::cout << "add <number> <number> - add two numbers\n";
         std::cout << "mul <number> <number> - multiply two numbers\n";
         std::cout << "factor <polynomial> - factor a polynomial\n";
+        std::cout << "sin/cos/tan <angle> - trigonometric functions\n";
+        std::cout << "asin/acos/atan <number> - inverse trigonometric "
+                     "functions\n";
         std::cout
             << "\nFor help with a specific function, type help <function>\n\n";
         std::cout << "Options:\n";
-        std::cout << "  showsteps - " << (show_steps ? "enabled" : "disabled")
+        std::cout << "  showsteps - " << (show_steps ? "true" : "false")
+                  << "\n";
+        std::cout << "  degreemode - " << (degree_mode ? "enabled" : "disabled")
                   << "\n";
         std::cout << "  accuracy - " << accuracy
                   << ", change with accuracy <num>\n\n";
@@ -385,7 +466,41 @@ int main(int argc, char **argv) {
     if (input == "exit" || input == "quit") {
       break;
     }
-
+    if (input.substr(0, 4) == "asin" || input.substr(0, 6) == "arcsin") {
+      auto tokens = tokenize(input);
+      if (tokens.size() == 1) {
+        std::cout << "Example usage: arcsin 0.5 ==> 30\u00b0 = 0.523598 rad\n";
+        continue;
+      }
+      std::string num = tokens[1];
+      std::cout << " ==> "
+                << "arcsin(" << num << ") = ";
+      std::string answer = arithmetica::arcsin(num, accuracy + 3);
+      std::cout << round_decimal(
+                       basic_math_operations::multiply(
+                           basic_math_operations::multiply(answer, "180"),
+                           inverse_pi.substr(0, 6 + accuracy)),
+                       accuracy)
+                << "\u00b0 = " << round_decimal(answer, accuracy) << " rad\n";
+    }
+    if (input.substr(0, 3) == "sin") {
+      auto tokens = tokenize(input);
+      if (tokens.size() == 1) {
+        std::cout << "Example usage: sin 30 ==> 0.5, assuming that degree mode "
+                     "is enabled\n";
+        continue;
+      }
+      std::string num = tokens[1];
+      std::cout << " ==> "
+                << "sin(" << num << (degree_mode ? "\u00b0" : " rad") << ") = ";
+      if (degree_mode) {
+        num = basic_math_operations::divide(
+            basic_math_operations::multiply(num, pi.substr(0, 6 + accuracy)),
+            "180", accuracy + 3);
+      }
+      std::cout << round_decimal(arithmetica::sine(num, accuracy + 3), accuracy)
+                << "\n";
+    }
     if (input.substr(0, 8) == "accuracy") {
       if (input.length() < 9) {
         std::cout << "accuracy is currently " << accuracy << "\n";
@@ -424,6 +539,11 @@ int main(int argc, char **argv) {
       show_steps = !show_steps;
       std::cout << "showsteps is now " << (show_steps ? "true" : "false")
                 << "\n";
+    }
+    if (input == "degreemode") {
+      degree_mode = !degree_mode;
+      std::cout << "degreemode is now "
+                << (degree_mode ? "enabled" : "disabled") << "\n";
     }
     if (input.substr(0, 4) == "eval") {
       if (input.length() < 6) {
