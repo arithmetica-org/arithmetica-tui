@@ -16,8 +16,8 @@ jobs:
         echo $LATEST_TAG
     - name: Calculate the autorelease number with the help of the GitHub API.
       run: |
-        echo https://api.github.com/repos/avighnac/arithmetica-tui/compare/${LATEST_TAG}...HEAD
-        GITHUB_API_URL=$(echo https://api.github.com/repos/avighnac/arithmetica-tui/compare/${LATEST_TAG}...HEAD)
+        echo https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD
+        GITHUB_API_URL=$(echo https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD)
         echo $GITHUB_API_URL
         AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
         echo $AUTORELEASE_NO
@@ -33,7 +33,7 @@ jobs:
         cmake --build build --config Release --target all -j 10 --
     - name: Make a variable for the release name
       run: |
-        echo "RELEASE_NAME=$(echo ${LATEST_TAG}-alpha-${AUTORELEASE_NO})" >> $GITHUB_ENV
+        echo "RELEASE_NAME=$(echo $LATEST_TAG-alpha-$AUTORELEASE_NO)" >> $GITHUB_ENV
         echo $RELEASE_NAME
     - name: Create a GitHub (pre)release
       id: create_release
