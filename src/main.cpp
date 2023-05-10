@@ -186,6 +186,8 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
 
 std::string version = "0.1.3";
 
+std::string autorelease = "0";
+
 int main(int argc, char **argv) {
   using namespace basic_math_operations;
   using namespace arithmetica;
@@ -198,8 +200,20 @@ int main(int argc, char **argv) {
   //                "evaluating trigonometric functions to hundreds of decimal "
   //                "places, arithmetica has you covered!\n\n";
 
-  std::cout << "arithmetica " << version
-            << "\nhttps://github.com/avighnac/arithmetica-tui\n\n";
+  std::cout << "arithmetica ";
+
+  if (!autorelease.empty() && autorelease != "0") {
+    std::cout << "alpha (" << autorelease << " commit";
+    if (autorelease != "1") {
+      std::cout << "s";
+    }
+    std::cout << " after " << version << ")\n";
+    std::cout << "This version was automatically compiled and released by GitHub Actions. Due to its bleeding edge nature, some features might be unstable.\n";
+  } else {
+    std::cout << version << "\n";
+  }
+
+  std::cout << "\nhttps://github.com/avighnac/arithmetica-tui\n\n";
 
   std::cout << "arithmetica supports showing working with steps (disabled "
                "by default), toggle this by typing \"showsteps\".\n\n";
