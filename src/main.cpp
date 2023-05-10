@@ -379,11 +379,16 @@ int main(int argc, char **argv) {
             }
           }
         }
-      } else if (c == 127 || c == 8) { // Backspace/delete
+      } else if (c == 127 || c == 8 || c == 27) { // Backspace/delete/delete key
         if (input_index != 0) {
-          // Remove the character behind [input_index]
-          input.erase(input_index - 1, 1);
-          input_index--;
+          if (c == 127 || c == 8) { // Backspace
+            // Remove the character behind [input_index]
+            input.erase(input_index - 1, 1);
+            input_index--;
+          } else { // Delete key
+            // Remove the character in front of [input_index]
+            input.erase(input_index, 1);
+          }
           std::cout << "\33[2K\rarithmetica> " << input;
           std::cout << "\rarithmetica> " << input.substr(0, input_index);
         }
@@ -466,16 +471,37 @@ int main(int argc, char **argv) {
     if (input == "exit" || input == "quit") {
       break;
     }
-    if (input.substr(0, 4) == "asin" || input.substr(0, 6) == "arcsin") {
+    if (input.substr(0, 4) == "asin" || input.substr(0, 6) == "arcsin" ||
+        input.substr(0, 4) == "acos" || input.substr(0, 6) == "arccos" ||
+        input.substr(0, 4) == "atan" || input.substr(0, 6) == "arctan") {
       auto tokens = tokenize(input);
+
+      bool is_acos = tokens[0] == "acos" || tokens[0] == "arccos";
+      bool is_atan = tokens[0] == "atan" || tokens[0] == "arctan";
+
+      std::vector<std::string> functions = {"arcsin", "arccos", "arctan"};
+      std::vector<std::string> example_usages = {
+          "Example usage: arcsin 0.5 ==> 30\u00b0 = 0.523598 rad",
+          "Example usage: arccos 0.5 ==> 60\u00b0 = 1.0472 rad",
+          "Example usage: arctan 1 ==> 45\u00b0 = 0.785398 rad"};
+
       if (tokens.size() == 1) {
-        std::cout << "Example usage: arcsin 0.5 ==> 30\u00b0 = 0.523598 rad\n";
+        std::cout << "Example usage: " << example_usages[is_acos + 2 * is_atan] << "\n";
         continue;
       }
       std::string num = tokens[1];
       std::cout << " ==> "
-                << "arcsin(" << num << ") = ";
-      std::string answer = arithmetica::arcsin(num, accuracy + 3);
+                <<  functions[is_acos + 2 * is_atan] << "(" << num << ") = ";
+      std::string answer;
+
+      if (is_acos) {
+        answer = arithmetica::arccos(num, accuracy + 3);
+      } else if (is_atan) {
+        answer = arithmetica::arctan(num, accuracy + 3);
+      } else {
+        answer = arithmetica::arcsin(num, accuracy + 3);
+      }
+
       std::cout << round_decimal(
                        basic_math_operations::multiply(
                            basic_math_operations::multiply(answer, "180"),
@@ -483,32 +509,58 @@ int main(int argc, char **argv) {
                        accuracy)
                 << "\u00b0 = " << round_decimal(answer, accuracy) << " rad\n";
     }
-    if (input.substr(0, 3) == "sin") {
+    if (input.substr(0, 3) == "sin" || input.substr(0, 3) == "cos" ||
+        input.substr(0, 3) == "tan") {
+      bool is_cos = input.substr(0, 3) == "cos";
+      bool is_tan = input.substr(0, 3) == "tan";
+
+      std::vector<std::string> function_names = {"sin", "cos", "tan"};
+      std::vector<std::string> example_usages = {
+          "sin 30 ==> 0.5", "cos 60 ==> 0.5", "tan 45 ==> 1"};
+
       auto tokens = tokenize(input);
       if (tokens.size() == 1) {
-        std::cout << "Example usage: sin 30 ==> 0.5, assuming that degree mode "
-                     "is enabled\n";
+        std::cout << "Example usage: " << example_usages[is_cos + is_tan * 2]
+                  << ", assuming that degree mode is enabled\n";
         continue;
       }
       std::string num = tokens[1];
-      std::cout << " ==> "
-                << "sin(" << num << (degree_mode ? "\u00b0" : " rad") << ") = ";
+      std::cout << " ==> " << function_names[is_cos + is_tan * 2] << "(" << num
+                << (degree_mode ? "\u00b0" : " rad") << ") = ";
       if (degree_mode) {
         num = basic_math_operations::divide(
             basic_math_operations::multiply(num, pi.substr(0, 6 + accuracy)),
             "180", accuracy + 3);
       }
-      std::cout << round_decimal(arithmetica::sine(num, accuracy + 3), accuracy)
-                << "\n";
+
+      std::string answer;
+      if (is_cos) {
+        answer = arithmetica::cosine(num, accuracy + 3);
+      } else if (is_tan) {
+        answer = arithmetica::tangent(num, accuracy + 3);
+      } else {
+        answer = arithmetica::sine(num, accuracy + 3);
+      }
+
+      std::cout << round_decimal(answer, accuracy) << "\n";
     }
     if (input.substr(0, 8) == "accuracy") {
-      if (input.length() < 9) {
+      auto tokens = tokenize(input);
+      if (tokens.size() == 1) {
         std::cout << "accuracy is currently " << accuracy << "\n";
         continue;
       }
-      std::string num = input.substr(8);
+      std::string &num = tokens[1];
+      if (num.length() > 18) {
+        std::cout << "Number too large\n";
+        continue;
+      }
+      if (num[0] == '-') {
+        std::cout << "Number must be positive\n";
+        continue;
+      }
       try {
-        accuracy = std::stoi(num);
+        accuracy = std::stoull(num);
       } catch (std::invalid_argument &e) {
         std::cout << "Invalid number: " << num << "\n";
         continue;
