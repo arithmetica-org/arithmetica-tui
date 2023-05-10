@@ -24,6 +24,7 @@ jobs:
         echo $LATEST_TAG
     - name: Calculate the autorelease number with the help of the GitHub API.
       run: |
+        echo $LATEST_TAG
         echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD"
         GITHUB_API_URL=$(echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD")
         echo $GITHUB_API_URL
