@@ -160,6 +160,7 @@ multiply_polynomials_with_steps(std::vector<am_frac> p1,
     }
   }
   steps.push_back(step);
+  steps.push_back(form_printable_polynomial(answer, variable));
   return steps;
 }
 

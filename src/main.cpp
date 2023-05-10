@@ -6,6 +6,17 @@
 #include <unistd.h>
 #include <vector>
 
+static void replace_all(std::string &str, const std::string &from,
+                        const std::string &to) {
+  if (from.empty())
+    return;
+  size_t start_pos = 0;
+  while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
+}
+
 // Get a single character from the console without echo or buffering
 char getch() {
   struct termios oldt, newt;
@@ -169,10 +180,11 @@ void print_help(std::string function) {
 }
 
 namespace arithmetica_factor_polynomial {
-std::string factor_polynomial(std::string expr, std::vector<std::string> &steps, bool show_steps);
+std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
+                              bool show_steps);
 };
 
-std::string version = "0.1.2";
+std::string version = "0.1.3";
 
 int main(int argc, char **argv) {
   using namespace basic_math_operations;
@@ -324,13 +336,15 @@ int main(int argc, char **argv) {
       }
       std::string expression = input.substr(7);
       std::vector<std::string> steps;
-      std::string factored =
-          arithmetica_factor_polynomial::factor_polynomial(expression, steps, show_steps);
+      std::string factored = arithmetica_factor_polynomial::factor_polynomial(
+          expression, steps, show_steps);
       if (factored != "ERROR") {
+        steps.push_back(factored);
         for (auto &i : steps) {
+          replace_all(i, "+", " + ");
+          replace_all(i, "-", " - ");
           std::cout << "==> " << i << "\n";
         }
-        std::cout << "==> " << factored << "\n";
       }
     }
 
