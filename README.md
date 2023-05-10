@@ -6,11 +6,18 @@ A command-line wrapper for the arithmetica library.
 curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install.sh | sudo bash
 ```
 # Features
-## Factorize polynomials
+## Factorize polynomials (with steps and without)
 Arithmetica can currently factorize any degree single variable polynomials!
-
+### With steps
+See step-by-step instructions on how to factor the polynomial of your choice.
 <div align='center'>
-  <img width="790" height="340" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/e3f5f842-629c-4e67-9201-6c76a69d4cef'>
+  <img width="790" height="310" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/b421a59e-f49b-498f-9dcc-82924e1e05be'>
+</div>
+
+### Just the answer
+Or just get to the answer.
+<div align='center'>
+  <img width="790" height="380" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/2c2129c6-1031-463d-9280-9f92f7d3d822'>
 </div>
 
 ## Evaluate expressions

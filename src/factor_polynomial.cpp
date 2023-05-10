@@ -44,15 +44,19 @@ std::string form_printable_polynomial(std::vector<am_frac> &coeffs,
     return arithmetica::to_string(coeffs[0]);
   }
   std::string answer;
+  bool reached_nonzero = false;
   for (size_t i = 0; i < coeffs.size(); ++i) {
     am_frac &n = coeffs[i];
     if (n == "0") {
       continue;
     }
-    if (i != 0 && n.numerator[0] != '-') {
+    if (reached_nonzero && n.numerator[0] != '-') {
       answer += "+";
     }
-    if (!(n == "1")) {
+    reached_nonzero = true;
+    if (n == "-1" && coeffs.size() - i - 1 != 0) {
+      answer += "-";
+    } else if (!(n == "1")) {
       answer += arithmetica::to_string(n);
     } else if (coeffs.size() - i - 1 == 0) {
       answer += "1";
@@ -67,7 +71,100 @@ std::string form_printable_polynomial(std::vector<am_frac> &coeffs,
   return answer;
 }
 
-std::string factor_polynomial(std::string expr) {
+std::vector<std::string>
+multiply_polynomials_with_steps(std::vector<am_frac> p1,
+                                std::vector<am_frac> p2,
+                                std::vector<am_frac> &answer, char variable) {
+  std::string p1_str = form_printable_polynomial(p1, variable);
+  std::string p2_str = form_printable_polynomial(p2, variable);
+
+  if (p1_str == "1") {
+    answer = p2;
+    return {};
+  }
+  if (p2_str == "1") {
+    answer = p1;
+    return {};
+  }
+
+  // Distribute p1 over p2
+  std::vector<std::string> steps;
+  std::string step;
+  bool reached_nonzero = false;
+  for (size_t i = 0; i < p1.size(); ++i) {
+    am_frac &n = p1[i];
+    if (n == "0") {
+      continue;
+    }
+    if (reached_nonzero && n.numerator[0] != '-') {
+      step += "+";
+    }
+    reached_nonzero = true;
+    if (n == "-1" && p1.size() - i - 1 != 0) {
+      step += "-";
+    } else if (!(n == "1")) {
+      step += arithmetica::to_string(n);
+    } else if (p1.size() - i - 1 == 0) {
+      step += "1";
+    }
+    if (p1.size() - i - 1 != 0) {
+      step += std::string(1, variable);
+      if (p1.size() - i - 1 != 1) {
+        step += "^" + std::to_string(p1.size() - i - 1);
+      }
+    }
+
+    step += "(" + p2_str + ")";
+  }
+  steps.push_back(step);
+  step.clear();
+
+  // Max power: p1.size() + p2.size() - 2
+  const size_t max_terms =
+      p1.size() + p2.size() - 1; // including the constant term
+  answer = {};
+  for (size_t i = 0; i < max_terms; ++i) {
+    answer.push_back("0");
+  }
+  for (size_t i = 0; i < p1.size(); ++i) {
+    am_frac &n = p1[i];
+    // current power: p1.size() - i - 1
+    // current max power: (p1.size() - i - 1) + (p2.size() - 1)
+    //                  = p1.size() + p2.size() - 2 - i
+    std::vector<am_frac> partial_result;
+    for (auto j = 0; j < max_terms; ++j) {
+      partial_result.emplace_back("0");
+    }
+    for (size_t j = 0; j < p2.size(); ++j) {
+      // current power = (p1.size() - i - 1) + (p2.size() - j - 1)
+      //               = p1.size() + p2.size() - 2 - i - j
+      //               = max_terms - i - j - 1
+      // therefore current index = max_terms - 1 - (max_terms - i - j - 1)
+      //                         = max_terms - 1 - max_terms + i + j + 1
+      //                         = i + j
+      partial_result[i + j] = n * p2[j];
+    }
+
+    std::string partial_str =
+        form_printable_polynomial(partial_result, variable);
+
+    if (i != 0) {
+      if (partial_str[0] != '-') {
+        step.push_back('+');
+      }
+    }
+    step += partial_str;
+
+    for (auto j = 0; j < max_terms; ++j) {
+      answer[j] = answer[j] + partial_result[j];
+    }
+  }
+  steps.push_back(step);
+  return steps;
+}
+
+std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
+                              bool show_steps) {
   auto terms = algebraic_num::get_terms(expr);
   if (terms.empty()) {
     std::cerr << "Error: " << expr << " is not a valid algebraic expression.\n";
@@ -177,6 +274,8 @@ std::string factor_polynomial(std::string expr) {
   }
 
   std::string answer;
+  std::vector<std::vector<am_frac>> factors;
+  std::vector<std::string> string_factors;
   for (auto &i : successfully_divided) {
     std::vector<am_frac> coeffs = {"1", i * "-1"};
 
@@ -195,8 +294,15 @@ std::string factor_polynomial(std::string expr) {
       }
     }
 
-    answer += "(" + form_printable_polynomial(coeffs, variable) + ")";
+    factors.push_back(coeffs);
+
+    string_factors.push_back("(" + form_printable_polynomial(coeffs, variable) +
+                             ")");
+    answer += string_factors.back();
   }
+  successfully_divided.clear();
+  factors.push_back(frac_coefficients);
+
   if (answer.empty()) {
     answer += form_printable_polynomial(frac_coefficients, variable);
   } else {
@@ -205,6 +311,29 @@ std::string factor_polynomial(std::string expr) {
           "(" + form_printable_polynomial(frac_coefficients, variable) + ")";
     }
   }
+
+  frac_coefficients.clear();
+
+  if (!show_steps) {
+    return answer;
+  }
+
+  steps = {};
+  std::vector<am_frac> expanded = factors[0];
+  for (size_t i = 1; i < factors.size(); ++i) {
+    std::vector<am_frac> answer;
+    std::vector<std::string> partial_steps =
+        multiply_polynomials_with_steps(expanded, factors[i], answer, variable);
+    for (auto &j : partial_steps) {
+      std::string full_step = "(" + j + ")";
+      for (auto k = i + 1; k < string_factors.size(); ++k) {
+        full_step += string_factors[k];
+      }
+      steps.push_back(full_step);
+    }
+    expanded = answer;
+  }
+  std::reverse(steps.begin(), steps.end());
 
   return answer;
 }

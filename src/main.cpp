@@ -169,10 +169,10 @@ void print_help(std::string function) {
 }
 
 namespace arithmetica_factor_polynomial {
-std::string factor_polynomial(std::string expr);
+std::string factor_polynomial(std::string expr, std::vector<std::string> &steps, bool show_steps);
 };
 
-std::string version = "0.1.1";
+std::string version = "0.1.2";
 
 int main(int argc, char **argv) {
   using namespace basic_math_operations;
@@ -323,10 +323,14 @@ int main(int argc, char **argv) {
         continue;
       }
       std::string expression = input.substr(7);
+      std::vector<std::string> steps;
       std::string factored =
-          arithmetica_factor_polynomial::factor_polynomial(expression);
+          arithmetica_factor_polynomial::factor_polynomial(expression, steps, show_steps);
       if (factored != "ERROR") {
-        std::cout << factored << "\n";
+        for (auto &i : steps) {
+          std::cout << "==> " << i << "\n";
+        }
+        std::cout << "==> " << factored << "\n";
       }
     }
 
