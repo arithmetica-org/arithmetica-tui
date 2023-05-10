@@ -228,11 +228,16 @@ int main(int argc, char **argv) {
       return 0;
     }
     if (std::string(argv[1]) == "--update-bleeding-edge") {
-      std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_bleeding_edge.sh | sudo bash &");
+      std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
+                  "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                  "contents/install_bleeding_edge.sh | sudo bash &");
       std::exit(0);
     }
-    if (std::string(argv[1]) == "--update-stable" || std::string(argv[1]) == "--update") {
-      std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_stable.sh | sudo bash &");
+    if (std::string(argv[1]) == "--update-stable" ||
+        std::string(argv[1]) == "--update") {
+      std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
+                  "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                  "contents/install_stable.sh | sudo bash &");
       std::exit(0);
     }
   }
@@ -241,7 +246,6 @@ int main(int argc, char **argv) {
 
   if (!autorelease.empty() && autorelease != "0") {
     std::cout << "\n"
-              << printable_version
               << "This version was automatically compiled and released by "
                  "GitHub Actions. Due to its bleeding edge nature, some "
                  "features might be unstable.\n";
