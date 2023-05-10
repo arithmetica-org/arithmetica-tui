@@ -12,7 +12,6 @@ If you want to install the bleeding edge version, run:
 ```
 curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_bleeding_edge.sh | sudo bash
 ```
-```
 
 # Features
 ## Factorize polynomials (with steps and without)
