@@ -22,6 +22,12 @@ then
   echo -e "\e[31munzip not installed!\e[0m" > /dev/stderr
   exit
 fi
+echo -e "Testing for jq..."
+if ! command -v jq &> /dev/null
+then
+  echo -e "\e[31mjq not installed!\e[0m" > /dev/stderr
+  exit
+fi
 echo -e "Testing for wget..."
 if ! command -v wget &> /dev/null
 then
