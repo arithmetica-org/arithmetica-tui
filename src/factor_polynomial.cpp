@@ -302,6 +302,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
   }
   successfully_divided.clear();
   factors.push_back(frac_coefficients);
+  string_factors.push_back("(" + form_printable_polynomial(frac_coefficients, variable) + ")");
 
   if (answer.empty()) {
     answer += form_printable_polynomial(frac_coefficients, variable);
