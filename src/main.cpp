@@ -202,19 +202,49 @@ int main(int argc, char **argv) {
   //                "evaluating trigonometric functions to hundreds of decimal "
   //                "places, arithmetica has you covered!\n\n";
 
-  std::cout << "arithmetica ";
+  std::string printable_version = "arithmetica ";
 
   if (!autorelease.empty() && autorelease != "0") {
-    std::cout << "alpha (" << autorelease << " commit";
+    printable_version += "alpha (" + autorelease + " commit";
     if (autorelease != "1") {
-      std::cout << "s";
+      printable_version += "s";
     }
-    std::cout << " after " << version << ")\n";
-    std::cout << "This version was automatically compiled and released by "
+    printable_version += " after " + version + ")";
+  } else {
+    printable_version += version;
+  }
+
+  if (argc == 2) {
+    if (std::string(argv[1]) == "--version") {
+      std::cout << printable_version << "\n";
+      return 0;
+    }
+    if (std::string(argv[1]) == "--get-tag") {
+      if (!autorelease.empty() && autorelease != "0") {
+        std::cout << version << "-alpha-" << autorelease << "\n";
+        return 0;
+      }
+      std::cout << version << "\n";
+      return 0;
+    }
+    if (std::string(argv[1]) == "--update-bleeding-edge") {
+      std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_bleeding_edge.sh | sudo bash &");
+      std::exit(0);
+    }
+    if (std::string(argv[1]) == "--update-stable") {
+      std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_stable.sh | sudo bash &");
+      std::exit(0);
+    }
+  }
+
+  std::cout << printable_version;
+
+  if (!autorelease.empty() && autorelease != "0") {
+    std::cout << "\n"
+              << printable_version
+              << "This version was automatically compiled and released by "
                  "GitHub Actions. Due to its bleeding edge nature, some "
                  "features might be unstable.\n";
-  } else {
-    std::cout << version << "\n";
   }
 
   std::cout << "\nhttps://github.com/avighnac/arithmetica-tui\n\n";
@@ -400,8 +430,8 @@ int main(int argc, char **argv) {
       std::string result =
           arithmetica::simplify_arithmetic_expression(expression, 1, accuracy);
       std::vector<std::string> to_print = {
-          arithmetica::simplify_arithmetic_expression(result, 0, accuracy), result,
-          arithmetica::simplify_arithmetic_expression(result, 2, 0)};
+          arithmetica::simplify_arithmetic_expression(result, 0, accuracy),
+          result, arithmetica::simplify_arithmetic_expression(result, 2, 0)};
       // remove duplicates from to_print
       to_print.erase(std::unique(to_print.begin(), to_print.end()),
                      to_print.end());
