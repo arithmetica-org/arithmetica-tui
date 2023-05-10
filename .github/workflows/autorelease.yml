@@ -1,14 +1,6 @@
 name: Autorelease
 
 on:
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
-        default: 'warning'
-      tags:
-        description: 'Test'  
   push:
     branches: [ "main" ]
 
@@ -18,30 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Retrieve the latest version from the GitHub API.
+    - name: Compile and create release
       run: |
         LATEST_TAG=$(curl -s "https://api.github.com/repos/avighnac/arithmetica-tui/releases/latest" | jq -r '.tag_name')
-        echo $LATEST_TAG
-    - name: Calculate the autorelease number with the help of the GitHub API.
-      run: |
         echo $LATEST_TAG
         echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD"
         GITHUB_API_URL=$(echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD")
         echo $GITHUB_API_URL
         AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
         echo $AUTORELEASE_NO
-    - name: Modify main.cpp
-      run: sed -i "s/std::string autorelease = \".*\";/std::string autorelease = \"${AUTORELEASE_NO}\";/" src/main.cpp
-    - name: Download arithmetica and basic_math_operations
-      run: |
+        sed -i "s/std::string autorelease = \".*\";/std::string autorelease = \"${AUTORELEASE_NO}\";/" src/main.cpp
         curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica/contents/install.sh | sudo bash
         curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/basic_math_operations/contents/install.sh | sudo bash
-    - name: Compile arithmetica for a GitHub release
-      run: |
         cmake --no-warn-unused-cli -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Release -S . -B build -G "Unix Makefiles"
         cmake --build build --config Release --target all -j 10 --
-    - name: Make a variable for the release name
-      run: |
         echo "RELEASE_NAME=$(echo $LATEST_TAG-alpha-$AUTORELEASE_NO)" >> $GITHUB_ENV
         echo $RELEASE_NAME
     - name: Create a GitHub (pre)release
