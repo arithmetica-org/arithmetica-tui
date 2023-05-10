@@ -205,6 +205,7 @@ int main(int argc, char **argv) {
     ++history_index;
     history.push_back("");
     std::string input;
+    size_t input_index = 0;
     std::cout << "arithmetica> ";
     char c;
     while ((c = getch()) != '\n') {
@@ -217,23 +218,45 @@ int main(int argc, char **argv) {
               history_index--;
             }
             input = history[history_index];
+            input_index = input.length();
             std::cout << "\33[2K\rarithmetica> " << input;
           } else if (c == 66) { // Down arrow
             if (history_index < history.size() - 1) {
               history_index++;
             }
             input = history[history_index];
+            input_index = input.length();
             std::cout << "\33[2K\rarithmetica> " << input;
+          } else if (c == 67) { // Right arrow
+            if (input_index < input.length()) {
+              input_index++;
+              std::cout << "\rarithmetica> " << input.substr(0, input_index);
+            }
+          } else if (c == 68) { // Left arrow
+            if (input_index != 0) {
+              input_index--;
+              std::cout << "\rarithmetica> " << input.substr(0, input_index);
+            }
           }
         }
       } else if (c == 127 || c == 8) { // Backspace/delete
-        if (!input.empty()) {
-          input.pop_back();
-          std::cout << "\b \b";
+        if (input_index != 0) {
+          // Remove the character behind [input_index]
+          input.erase(input_index - 1, 1);
+          input_index--;
+          std::cout << "\33[2K\rarithmetica> " << input;
+          std::cout << "\rarithmetica> " << input.substr(0, input_index);
         }
       } else {
-        input += c;
-        std::cout << c;
+        // Add the character to the string in front of [input_index]
+        if (input_index == input.length() - 1) {
+          input.push_back(c);
+        } else {
+          input.insert(input_index, 1, c);
+        }
+        input_index++;
+        std::cout << "\33[2K\rarithmetica> " << input;
+        std::cout << "\rarithmetica> " << input.substr(0, input_index);
       }
     }
 
