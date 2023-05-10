@@ -14,7 +14,11 @@ jobs:
     - name: Calculate the autorelease number with the help of the GitHub API.
       run: AUTORELEASE_NO=$(curl -s "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD" | jq -r '.total_commits')
     - name: Modify main.cpp
-      run: sed -i "s/std::string autorelease = \".*\";/std::string autorelease = \"$AUTORELEASE_NO\";/" ../src/main.cpp
+      run: sed -i "s/std::string autorelease = \".*\";/std::string autorelease = \"$AUTORELEASE_NO\";/" src/main.cpp
+    - name: Download arithmetica and basic_math_operations
+      run: |
+        curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica/contents/install.sh | sudo bash
+        curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/basic_math_operations/contents/install.sh | sudo bash
     - name: Compile arithmetica for a GitHub release
       run: |
         cmake --no-warn-unused-cli -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Release -S . -B build -G "Unix Makefiles"

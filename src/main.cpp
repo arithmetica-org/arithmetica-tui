@@ -188,6 +188,8 @@ std::string version = "0.1.3";
 
 std::string autorelease = "0";
 
+size_t accuracy = 10;
+
 int main(int argc, char **argv) {
   using namespace basic_math_operations;
   using namespace arithmetica;
@@ -208,7 +210,9 @@ int main(int argc, char **argv) {
       std::cout << "s";
     }
     std::cout << " after " << version << ")\n";
-    std::cout << "This version was automatically compiled and released by GitHub Actions. Due to its bleeding edge nature, some features might be unstable.\n";
+    std::cout << "This version was automatically compiled and released by "
+                 "GitHub Actions. Due to its bleeding edge nature, some "
+                 "features might be unstable.\n";
   } else {
     std::cout << version << "\n";
   }
@@ -317,6 +321,11 @@ int main(int argc, char **argv) {
         std::cout << "factor <polynomial> - factor a polynomial\n";
         std::cout
             << "\nFor help with a specific function, type help <function>\n\n";
+        std::cout << "Options:\n";
+        std::cout << "  showsteps - " << (show_steps ? "enabled" : "disabled")
+                  << "\n";
+        std::cout << "  accuracy - " << accuracy
+                  << ", change with accuracy <num>\n\n";
         continue;
       }
 
@@ -341,6 +350,21 @@ int main(int argc, char **argv) {
 
     if (input == "exit" || input == "quit") {
       break;
+    }
+
+    if (input.substr(0, 8) == "accuracy") {
+      if (input.length() < 9) {
+        std::cout << "accuracy is currently " << accuracy << "\n";
+        continue;
+      }
+      std::string num = input.substr(8);
+      try {
+        accuracy = std::stoi(num);
+      } catch (std::invalid_argument &e) {
+        std::cout << "Invalid number: " << num << "\n";
+        continue;
+      }
+      std::cout << "accuracy is now " << accuracy << "\n";
     }
 
     if (input.substr(0, 6) == "factor") {
@@ -374,11 +398,15 @@ int main(int argc, char **argv) {
       }
       std::string expression = input.substr(5);
       std::string result =
-          arithmetica::simplify_arithmetic_expression(expression, 1, 0);
-      print_expression(
-          {arithmetica::simplify_arithmetic_expression(result, 0, 10), result,
-           arithmetica::simplify_arithmetic_expression(result, 2, 0)},
-          {"=", "="}, 0);
+          arithmetica::simplify_arithmetic_expression(expression, 1, accuracy);
+      std::vector<std::string> to_print = {
+          arithmetica::simplify_arithmetic_expression(result, 0, accuracy), result,
+          arithmetica::simplify_arithmetic_expression(result, 2, 0)};
+      // remove duplicates from to_print
+      to_print.erase(std::unique(to_print.begin(), to_print.end()),
+                     to_print.end());
+      print_expression(to_print,
+                       std::vector<std::string>(to_print.size() - 1, "="), 0);
     }
     if (input.substr(0, 3) == "add") {
       std::vector<std::string> tokens = tokenize(input);
@@ -396,11 +424,8 @@ int main(int argc, char **argv) {
         // remove duplicates from answers
         answers.erase(std::unique(answers.begin(), answers.end()),
                       answers.end());
-        std::vector<std::string> signs;
-        for (size_t i = 1; i < answers.size(); ++i) {
-          signs.push_back("=");
-        }
-        print_expression(answers, signs, 0);
+        print_expression(answers,
+                         std::vector<std::string>(answers.size() - 1, "="), 0);
       } else {
         if (tokens[1].find('/') != std::string::npos ||
             tokens[2].find('/') != std::string::npos) {
