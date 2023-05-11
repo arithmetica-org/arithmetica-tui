@@ -304,16 +304,16 @@ int main(int argc, char **argv) {
       int n =
           std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
                       "https://api.github.com/repos/avighnac/arithmetica-tui/"
-                      "contents/install_bleeding_edge.sh | sudo bash &");
-      std::exit(0);
+                      "contents/install_bleeding_edge.sh | bash");
+      std::exit(n);
     }
     if (std::string(argv[1]) == "--update-stable" ||
         std::string(argv[1]) == "--update") {
       int n =
           std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
                       "https://api.github.com/repos/avighnac/arithmetica-tui/"
-                      "contents/install_stable.sh | sudo bash &");
-      std::exit(0);
+                      "contents/install_stable.sh | bash");
+      std::exit(n);
     }
   }
 
