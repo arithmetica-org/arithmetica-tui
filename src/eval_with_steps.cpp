@@ -679,6 +679,10 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
     return expression;
   }
 
+  if (steps.empty()) {
+    steps.push_back("==> " + std::string(expression));
+  }
+
   if (!outputMixedFraction) {
     delete_fraction(frac);
     return expression;
