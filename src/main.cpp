@@ -73,6 +73,12 @@ std::string center(std::string str, size_t n) {
   return std::string((n - str.length()) / 2, ' ') + str;
 }
 
+namespace eval_with_steps {
+char *simplify_arithmetic_expression(const char *expression_in, int outputType,
+                                     size_t accuracy,
+                                     std::vector<std::string> &steps);
+};
+
 std::vector<std::string> get_printable_result(std::string str) {
   std::string whole, numerator, denominator;
   if (str.find('/') != std::string::npos) {
@@ -614,20 +620,31 @@ int main(int argc, char **argv) {
         continue;
       }
       std::string expression = input.substr(5);
-      std::string result =
-          arithmetica::simplify_arithmetic_expression(expression, 1, accuracy);
-      std::vector<std::string> to_print = {
-          arithmetica::simplify_arithmetic_expression(result, 0, accuracy)};
-      if (enable_fractions_eval) {
-        to_print.push_back(result);
-        to_print.push_back(
-            arithmetica::simplify_arithmetic_expression(result, 2, 0));
+      if (!show_steps) {
+        std::string result = arithmetica::simplify_arithmetic_expression(
+            expression, 1, accuracy);
+        std::vector<std::string> to_print = {
+            arithmetica::simplify_arithmetic_expression(result, 0, accuracy)};
+        if (enable_fractions_eval) {
+          to_print.push_back(result);
+          to_print.push_back(
+              arithmetica::simplify_arithmetic_expression(result, 2, 0));
+        }
+        // remove duplicates from to_print
+        to_print.erase(std::unique(to_print.begin(), to_print.end()),
+                       to_print.end());
+        print_expression(to_print,
+                         std::vector<std::string>(to_print.size() - 1, "="), 0);
+      } else {
+        std::vector<std::string> steps;
+        eval_with_steps::simplify_arithmetic_expression(expression.c_str(), 1,
+                                                        accuracy, steps);
+        std::cout << "\n";
+        for (auto &i : steps) {
+          std::cout << i << "\n";
+        }
+        std::cout << "\n";
       }
-      // remove duplicates from to_print
-      to_print.erase(std::unique(to_print.begin(), to_print.end()),
-                     to_print.end());
-      print_expression(to_print,
-                       std::vector<std::string>(to_print.size() - 1, "="), 0);
     }
     if (input.substr(0, 3) == "add") {
       std::vector<std::string> tokens = tokenize(input);
