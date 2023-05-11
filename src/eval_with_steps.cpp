@@ -669,6 +669,10 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
     remove_misplaced_and_redundant_signs(&expression);
   }
 
+  if (steps.empty()) {
+    steps.push_back("==> " + std::string(expression));
+  }
+
   // If the denominator is 1 then return early.
   struct fraction frac = parse_fraction(expression);
   if (!strcmp(frac.denominator, "1")) {
@@ -677,10 +681,6 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
     if (_loc != NULL)
       expression[_loc - expression] = 0;
     return expression;
-  }
-
-  if (steps.empty()) {
-    steps.push_back("==> " + std::string(expression));
   }
 
   if (!outputMixedFraction) {
