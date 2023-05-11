@@ -654,6 +654,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
       }
 
       replace_substring_from_position(start, end, &expression, operationResult);
+      remove_misplaced_and_redundant_signs(&expression);
       expr_cpp = expression;
       if (do_step) {
         steps.push_back("The resulting expression is:\n" +
