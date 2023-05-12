@@ -232,7 +232,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
-std::string version = "0.2";
+std::string version = "0.2.0";
 
 std::string autorelease = "0";
 
