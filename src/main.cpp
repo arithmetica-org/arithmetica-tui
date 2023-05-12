@@ -1,3 +1,4 @@
+#include "algnum.hpp"
 #include <algorithm>
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
@@ -231,7 +232,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
-std::string version = "0.1.4";
+std::string version = "0.2";
 
 std::string autorelease = "0";
 
@@ -440,8 +441,8 @@ int main(int argc, char **argv) {
         std::cout
             << "showsteps - toggle showing steps (for supported functions)\n";
         std::cout << "eval <expression> - evaluate an arithmetic expression\n";
-        std::cout << "add <number> <number> - add two numbers\n";
-        std::cout << "mul <number> <number> - multiply two numbers\n";
+        std::cout << "add <number/algexpr> <number/algexpr> - add two numbers or algebraic expressions\n";
+        std::cout << "mul <number/algexpr> <number/algexpr> - multiply two numbers or algebraic expressions\n";
         std::cout << "factor <polynomial> - factor a polynomial\n";
         std::cout << "sin/cos/tan <angle> - trigonometric functions\n";
         std::cout << "asin/acos/atan <number> - inverse trigonometric "
@@ -647,8 +648,8 @@ int main(int argc, char **argv) {
                          std::vector<std::string>(to_print.size() - 1, "="), 0);
       } else {
         std::vector<std::string> steps;
-        eval_with_steps::simplify_arithmetic_expression(expression.c_str(), 1,
-                                                        accuracy, steps, verbose_eval);
+        eval_with_steps::simplify_arithmetic_expression(
+            expression.c_str(), 1, accuracy, steps, verbose_eval);
         std::cout << "\n";
         for (auto &i : steps) {
           std::cout << i << "\n";
@@ -662,6 +663,27 @@ int main(int argc, char **argv) {
         std::cout << "Example usage: add 1/2 1/2 => 1\n";
         continue;
       }
+
+      if (tokens[1].find_first_of(
+              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") !=
+              std::string::npos ||
+          tokens[2].find_first_of(
+              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") !=
+              std::string::npos) {
+        algnum::algexpr a = algnum::algexpr(tokens[1].c_str());
+        algnum::algexpr b = algnum::algexpr(tokens[2].c_str());
+
+        std::string expr = (a + b).latex();
+        // Remove spaces
+        expr.erase(std::remove(expr.begin(), expr.end(), ' '), expr.end());
+        // Add spaces around operators
+        replace_all(expr, "+", " + ");
+        replace_all(expr, "-", " - ");
+
+        std::cout << "==> " << expr << "\n";
+        continue;
+      }
+
       if (!show_steps) {
         arithmetica::Fraction f_1 = arithmetica::Fraction(tokens[1]);
         arithmetica::Fraction f_2 = arithmetica::Fraction(tokens[2]);
@@ -752,6 +774,27 @@ int main(int argc, char **argv) {
         std::cout << "Example usage: mul 1/2 1/2 => 1/4\n";
         continue;
       }
+
+      // Check if the input (tokens[1] or tokens[2]) contains letters ('a' - 'z'
+      // or 'A' - 'Z'), if so, perform algebraic multiplication
+      if (tokens[1].find_first_of(
+              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") !=
+              std::string::npos ||
+          tokens[2].find_first_of(
+              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") !=
+              std::string::npos) {
+        algnum::algexpr expr_1 = algnum::algexpr(tokens[1].c_str());
+        algnum::algexpr expr_2 = algnum::algexpr(tokens[2].c_str());
+        std::string answer = (expr_1 * expr_2).latex();
+        // Remove all spaces from the answer
+        answer.erase(std::remove(answer.begin(), answer.end(), ' '),
+                     answer.end());
+        replace_all(answer, "+", " + ");
+        replace_all(answer, "-", " - ");
+        std::cout << "==> " << answer << "\n";
+        continue;
+      }
+
       if (!show_steps) {
         std::cout << "nah bro\n";
       } else {
