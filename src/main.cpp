@@ -76,7 +76,8 @@ std::string center(std::string str, size_t n) {
 namespace eval_with_steps {
 char *simplify_arithmetic_expression(const char *expression_in, int outputType,
                                      size_t accuracy,
-                                     std::vector<std::string> &steps);
+                                     std::vector<std::string> &steps,
+                                     bool verbose);
 };
 
 std::vector<std::string> get_printable_result(std::string str) {
@@ -343,6 +344,7 @@ int main(int argc, char **argv) {
   bool show_steps = false;
   bool degree_mode = true;
   bool enable_fractions_eval = true;
+  bool verbose_eval = true;
 
   std::vector<std::string> history;
   int history_index = -1; // Current history item
@@ -453,6 +455,9 @@ int main(int argc, char **argv) {
                   << "\n";
         std::cout << "  fractionseval (enable fractions during eval) - "
                   << (enable_fractions_eval ? "enabled" : "disabled") << "\n";
+        std::cout << "  verboseeval (include verbose explanations with steps "
+                     "during eval) - "
+                  << (verbose_eval ? "enabled" : "disabled") << "\n";
         std::cout << "  accuracy - " << accuracy
                   << ", change with accuracy <num>\n\n";
         continue;
@@ -479,6 +484,11 @@ int main(int argc, char **argv) {
 
     if (input == "exit" || input == "quit") {
       break;
+    }
+    if (input == "verboseeval") {
+      verbose_eval = !verbose_eval;
+      std::cout << "verbose evaluation is now "
+                << (verbose_eval ? "enabled" : "disabled") << "\n";
     }
     if (input == "fractionseval") {
       enable_fractions_eval = !enable_fractions_eval;
@@ -638,7 +648,7 @@ int main(int argc, char **argv) {
       } else {
         std::vector<std::string> steps;
         eval_with_steps::simplify_arithmetic_expression(expression.c_str(), 1,
-                                                        accuracy, steps);
+                                                        accuracy, steps, verbose_eval);
         std::cout << "\n";
         for (auto &i : steps) {
           std::cout << i << "\n";

@@ -279,7 +279,8 @@ static void get_chain_division_location(char *expression, long *sign1In,
 
 char *simplify_arithmetic_expression(const char *expression_in, int outputType,
                                      size_t accuracy,
-                                     std::vector<std::string> &steps) {
+                                     std::vector<std::string> &steps,
+                                     bool verbose) {
   int step = 0;
   char *expression = (char *)calloc(strlen(expression_in) + 1, 1);
   strcpy(expression, expression_in);
@@ -319,11 +320,14 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
   free(multiplicationReplaceFrom);
   free(multiplicationReplaceTo);
 
+  std::vector<std::string> short_steps;
+
   std::string expr_cpp = expression;
   if (expr_cpp != std::string(expression_in)) {
     step++;
     steps.push_back("Step #" + std::to_string(step) +
                     ": Rewrite the expression as:\n " + expr_cpp + "\n");
+    short_steps.push_back("==> " + expr_cpp);
   }
 
   size_t n = strlen(expression);
@@ -347,6 +351,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
     steps.push_back("Step #" + std::to_string(step) +
                     ": Remove misplaced and redundant signs to get " +
                     expr_cpp + ".");
+    short_steps.push_back("==> " + expr_cpp);
   }
 
   const char *_loc = strchr(expression, '(');
@@ -357,7 +362,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
     strncpy(innerExpression, expression + start + 1, end - start - 1);
     std::vector<std::string> steps_sub;
     char *simplifiedInnerExpression = simplify_arithmetic_expression(
-        innerExpression, outputType, accuracy, steps_sub);
+        innerExpression, outputType, accuracy, steps_sub, verbose);
     bool print =
         std::string(simplifiedInnerExpression) != std::string(innerExpression);
     if (print) {
@@ -432,6 +437,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
     if (print) {
       steps.push_back("The resulting expression is:\n" +
                       expr_without_plus_zero(expr_cpp) + "\n");
+      short_steps.push_back("==> " + expr_without_plus_zero(expr_cpp));
     }
 
     free(simplifiedInnerExpression);
@@ -491,11 +497,10 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
     expr_cpp = expression;
     steps.push_back("The resulting expression is:\n" +
                     expr_without_plus_zero(expr_cpp) + "\n");
+    short_steps.push_back("==> " + expr_without_plus_zero(expr_cpp));
     free(simplifiedExponentiation);
     signLocation = find_operational_sign(expression, '^');
   }
-
-  // over here :)
 
   // This next part deals with decimal division.
   if (outputType == 0) {
@@ -554,6 +559,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
                                       simplifiedChainDivision);
       steps.push_back("The resulting expression is:\n" +
                       expr_without_plus_zero(std::string(expression)) + "\n");
+      short_steps.push_back("==> " + expr_without_plus_zero(expr_cpp));
       get_chain_division_location(expression, &sign1, &sign2);
       free(numerator);
       free(div1);
@@ -659,6 +665,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
       if (do_step) {
         steps.push_back("The resulting expression is:\n" +
                         expr_without_plus_zero(expr_cpp) + "\n");
+        short_steps.push_back("==> " + expr_without_plus_zero(expr_cpp));
       }
       signLocation = find_operational_sign(expression, sign);
 
@@ -672,6 +679,11 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
 
   if (steps.empty()) {
     steps.push_back("==> " + std::string(expression));
+    short_steps.push_back(steps.back());
+  }
+
+  if (!verbose) {
+    steps = short_steps;
   }
 
   // If the denominator is 1 then return early.
