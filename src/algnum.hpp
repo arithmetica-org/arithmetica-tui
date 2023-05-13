@@ -569,29 +569,34 @@ algnum::algnum(const char *s) {
           } else {
             // we don't have brackets
             // again, only a letter means we're done and that letter is the
-            // power
-            if (powerLocation + 1 < in.length() &&
-                is_letter(in[powerLocation + 1])) {
-              varpower = in.substr(powerLocation + 1, 1);
-              i = powerLocation + 2;
-            } else {
-              std::string temp;
-              // keep going ahead till we encounter the next non-numerical
-              // character
-              bool did_break = false;
-              for (auto j = powerLocation + 1; j < in.length(); j++) {
-                if (!('0' <= in[j] && in[j] <= '9')) {
-                  i = j - 1; // since it's going to be incremented when it
-                  // loops we have to sub 1
-                  did_break = true;
-                  break;
-                }
-                temp.push_back(in[j]);
+            // power - hi its me from 6 months later, no it doesn't, for eg
+            // a^b^c ==> pow(a, b^c)
+            size_t j = powerLocation + 1;
+            for (; j < in.length(); ++j) {
+              // we can break if the current character is a letter and the next
+              // is BOTH not a letter and not a '^
+              if (is_letter(in[j]) &&
+                  (j + 1 < in.length() && !is_letter(in[j + 1]) &&
+                   in[j + 1] != '^')) {
+                break;
               }
-              varpower = temp;
-              if (!did_break)
-                i = powerLocation + temp.length();
+              // if the current character is a number and the next is a letter
+              // we can break
+              if ('0' <= in[j] && in[j] <= '9' && j + 1 < in.length() &&
+                  is_letter(in[j + 1])) {
+                break;
+              }
+
+              // check if there's a non '^' symbol ahead, if so we're done
+              if (j + 1 < in.length() && in[j + 1] != '^') {
+                break;
+              } else {
+                j++;
+              }
             }
+            // powerLocation to j -> varpower
+            varpower = in.substr(powerLocation, j - powerLocation + 1);
+            i = j + 1;
           }
         } else {
           if (varname.length() == 1)
@@ -651,13 +656,13 @@ algnum::algnum(const char *s) {
         //          temp2 = var.power.denominator.division_accuracy;
         //   var.power.numerator.division_accuracy = 0;
         //   var.power.denominator.division_accuracy = 0;
-        //   rnumber integerPart = var.power.numerator / var.power.denominator;
-        //   var.power.numerator.division_accuracy = temp1;
-        //   var.power.denominator.division_accuracy = temp2;
-        //   rfraction multiplier = "1";
-        //   rfraction toMultiplyWith = rfraction(var.var.c_str());
-        //   var.power = var.power - rfraction(integerPart, rnumber("1"));
-        //   if (var.power.numerator != "0")
+        //   rnumber integerPart = var.power.numerator /
+        //   var.power.denominator; var.power.numerator.division_accuracy =
+        //   temp1; var.power.denominator.division_accuracy = temp2; rfraction
+        //   multiplier = "1"; rfraction toMultiplyWith =
+        //   rfraction(var.var.c_str()); var.power = var.power -
+        //   rfraction(integerPart, rnumber("1")); if (var.power.numerator !=
+        //   "0")
         //     newVariables.push_back(var);
         //   while (integerPart.number != "0") {
         //     multiplier = multiplier * toMultiplyWith;

@@ -441,8 +441,10 @@ int main(int argc, char **argv) {
         std::cout
             << "showsteps - toggle showing steps (for supported functions)\n";
         std::cout << "eval <expression> - evaluate an arithmetic expression\n";
-        std::cout << "add <number/algexpr> <number/algexpr> - add two numbers or algebraic expressions\n";
-        std::cout << "mul <number/algexpr> <number/algexpr> - multiply two numbers or algebraic expressions\n";
+        std::cout << "add <number/algexpr> <number/algexpr> - add two numbers "
+                     "or algebraic expressions\n";
+        std::cout << "mul <number/algexpr> <number/algexpr> - multiply two "
+                     "numbers or algebraic expressions\n";
         std::cout << "factor <polynomial> - factor a polynomial\n";
         std::cout << "sin/cos/tan <angle> - trigonometric functions\n";
         std::cout << "asin/acos/atan <number> - inverse trigonometric "
