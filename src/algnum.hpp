@@ -457,6 +457,14 @@ algnum::algnum(const char *s) {
   // don't enclose the parameters of a function
   remove_all_non_functional_brackets(input, supportedFunctions);
 
+  // Remove all '*' symbols that separate variables, for example "x*y" -> "xy"
+  for (auto i = 0; i < input.length(); i++) {
+    if (input[i] == '*' && i != 0 && i < input.length() - 1 &&
+        is_letter(input[i - 1]) && is_letter(input[i + 1])) {
+      input.erase(i, 1);
+    }
+  }
+
   replace_all(input, "*", " "); // for 2.
 
   // Now, remove all subsequent spaces, for example "  hell  o " -> " hell o "
@@ -640,9 +648,10 @@ algnum::algnum(const char *s) {
           }
           if (in[j] == '^') {
             // is a variable
+            size_t t = j;
             ++j;
             process_power(in, j);
-            std::string power = in.substr(i + 1, j - i - 1);
+            std::string power = in.substr(t + 1, j - t - 1);
             variable v = variable(num, power);
             v.constant = true;
             add_variable(v);
