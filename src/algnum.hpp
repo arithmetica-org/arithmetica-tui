@@ -18,6 +18,8 @@ std::string rfrac_to_latex(rfraction frac) {
 
 class variable;
 
+class algexpr;
+
 class algnum {
 public:
   rfraction constant;
@@ -217,19 +219,23 @@ algnum algnum::operator*(algnum a2) {
 
 std::string process_brackets(std::string in, size_t exp_loc, size_t &i);
 size_t prev_index(std::string s, size_t start);
+size_t next_index(std::string s, size_t start);
 bool check_for_functions_behind(std::string input, size_t start_pos,
                                 std::vector<std::string> &supportedFunctions);
 size_t get_matching_open_brace(std::string str, size_t index);
 
-void remove_all_non_function_brackets(
+void remove_all_non_functional_brackets(
     std::string &input, std::vector<std::string> &supportedFunctions) {
   size_t start_pos = 0;
   while ((start_pos = input.find('(', start_pos)) != std::string::npos) {
     if (start_pos == 0) {
-      input[get_matching_brace(input, 0)] = ' ';
-      input[0] = ' ';
-      start_pos++;
-      continue;
+      size_t match = get_matching_brace(input, 0);
+      if (match == input.length() - 1) {
+        input[get_matching_brace(input, 0)] = ' ';
+        input[0] = ' ';
+        start_pos++;
+        continue;
+      }
     }
     size_t index_prev_non_space = prev_index(input, start_pos);
     bool can_remove_brackets = input[index_prev_non_space] != '^';
@@ -240,6 +246,16 @@ void remove_all_non_function_brackets(
       can_remove_brackets =
           !check_for_functions_behind(input, start_pos, supportedFunctions);
     }
+
+    // we can't remove brackets if there's a power operator immediately after,
+    // as that might change the meaning of the expression, eg: (a^b)^c != a^b^c
+    if (can_remove_brackets) {
+      if (input[next_index(input, get_matching_brace(input, start_pos))] ==
+          '^') {
+        can_remove_brackets = false;
+      }
+    }
+
     // finally, if it's still true, perform a check for functions' weird power
     // notations i.e. how tan(x)^2 is written as tan^2(x) or x^(2/3) *can* be
     // written as cbrt^2(x)
@@ -339,6 +355,37 @@ algnum algnum::operator+(algnum a2) {
   return answer;
 };
 
+void process_power(std::string &in, size_t &j) {
+  for (; j < in.length(); ++j) {
+    // if the current character is a '(', we can skip ahead to the
+    // matching ')'
+    if (in[j] == '(') {
+      j = get_matching_brace(in, j) + 1;
+      continue;
+    }
+
+    // we can break if the current character is a letter and the next
+    // is BOTH not a letter and not a '^'
+    if (is_letter(in[j]) &&
+        (j + 1 < in.length() && !is_letter(in[j + 1]) && in[j + 1] != '^')) {
+      break;
+    }
+    // if the current character is a number and the next is a letter
+    // we can break
+    if ('0' <= in[j] && in[j] <= '9' && j + 1 < in.length() &&
+        is_letter(in[j + 1])) {
+      break;
+    }
+
+    // check if there's a non '^' symbol ahead, if so we're done
+    if (j + 1 < in.length() && in[j + 1] != '^') {
+      break;
+    } else {
+      j++;
+    }
+  }
+}
+
 algnum::algnum(const char *s) {
   std::string input = std::string(s);
 
@@ -408,7 +455,7 @@ algnum::algnum(const char *s) {
 
   // To deal with the second condition, we can eliminate all brackets that
   // don't enclose the parameters of a function
-  remove_all_non_function_brackets(input, supportedFunctions);
+  remove_all_non_functional_brackets(input, supportedFunctions);
 
   replace_all(input, "*", " "); // for 2.
 
@@ -557,47 +604,14 @@ algnum::algnum(const char *s) {
         // incremented i while setting the variable's name) is '^'
         if (i < in.length() && in[i] == '^') {
           size_t powerLocation = i;
-          // check for brackets
-          if (powerLocation + 1 < in.length() && in[powerLocation + 1] == '(') {
-            size_t first_brace_location = powerLocation + 1;
-            size_t matching_brace =
-                get_matching_brace(in, first_brace_location);
-
-            varpower = in.substr(first_brace_location + 1,
-                                 matching_brace - first_brace_location - 1);
-            i = matching_brace;
-          } else {
-            // we don't have brackets
-            // again, only a letter means we're done and that letter is the
-            // power - hi its me from 6 months later, no it doesn't, for eg
-            // a^b^c ==> pow(a, b^c)
-            size_t j = powerLocation + 1;
-            for (; j < in.length(); ++j) {
-              // we can break if the current character is a letter and the next
-              // is BOTH not a letter and not a '^
-              if (is_letter(in[j]) &&
-                  (j + 1 < in.length() && !is_letter(in[j + 1]) &&
-                   in[j + 1] != '^')) {
-                break;
-              }
-              // if the current character is a number and the next is a letter
-              // we can break
-              if ('0' <= in[j] && in[j] <= '9' && j + 1 < in.length() &&
-                  is_letter(in[j + 1])) {
-                break;
-              }
-
-              // check if there's a non '^' symbol ahead, if so we're done
-              if (j + 1 < in.length() && in[j + 1] != '^') {
-                break;
-              } else {
-                j++;
-              }
-            }
-            // powerLocation to j -> varpower
-            varpower = in.substr(powerLocation, j - powerLocation + 1);
-            i = j + 1;
-          }
+          // again, only a letter means we're done and that letter is the
+          // power - hi its me from 6 months later, no it doesn't, for eg
+          // a^b^c ==> pow(a, b^c)
+          size_t j = powerLocation + 1;
+          process_power(in, j);
+          // powerLocation+1 to j -> varpower
+          varpower = in.substr(powerLocation + 1, j - powerLocation);
+          i = j;
         } else {
           if (varname.length() == 1)
             i--; // since we incremented previously for a single letter
@@ -639,6 +653,18 @@ algnum::algnum(const char *s) {
           constant = constant * rfraction(num.c_str());
           i += num.length() - 1;
         }
+      } else if (in[i] == '(') {
+        /// deal with the '(a+b)^(c+d) case' case
+        size_t matching_brace = get_matching_brace(in, i);
+        size_t j = matching_brace + 2;
+        process_power(in, j);
+        std::string power =
+            in.substr(matching_brace + 2, j - matching_brace - 1);
+        std::string name = in.substr(i + 1, matching_brace - i - 1);
+        variable v = variable(name, power);
+        v.constant = false;
+        add_variable(v);
+        i = j;
       }
     }
   }
@@ -773,6 +799,15 @@ size_t prev_index(std::string s, size_t start) {
     if (s[i] != ' ')
       return i;
   return 0;
+};
+
+size_t next_index(std::string s, size_t start) {
+  if (start == s.length() - 1)
+    return s.length() - 1;
+  for (auto i = start + 1; i < s.length(); i++)
+    if (s[i] != ' ')
+      return i;
+  return s.length() - 1;
 };
 
 bool check_for_functions_behind(std::string input, size_t start_pos,
@@ -924,7 +959,7 @@ algexpr::algexpr(const char *s) {
   std::string input = std::string(s);
   clean_double_signs(input);
   auto supportedFunctions = get_supported_functions();
-  remove_all_non_function_brackets(input, supportedFunctions);
+  remove_all_non_functional_brackets(input, supportedFunctions);
 
   replace_all(input, "-", "+-");
 
