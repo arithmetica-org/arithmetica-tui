@@ -640,11 +640,14 @@ algnum::algnum(const char *s) {
           }
           if (in[j] == '^') {
             // is a variable
-            std::string power = process_brackets(in, j, i);
-            variable v = variable(num, rfraction(power.c_str()));
+            ++j;
+            process_power(in, j);
+            std::string power = in.substr(i + 1, j - i - 1);
+            variable v = variable(num, power);
             v.constant = true;
             add_variable(v);
             did_break = true;
+            i = j;
             break;
           }
           num.push_back(in[j]);
