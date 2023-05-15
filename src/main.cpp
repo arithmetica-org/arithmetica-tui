@@ -3,7 +3,6 @@
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
 #include <iostream>
-#include <termios.h>
 #include <unistd.h>
 #include <vector>
 
@@ -59,6 +58,8 @@ std::string round_decimal(std::string decimal, int n) {
 }
 
 // Get a single character from the console without echo or buffering
+#ifdef __linux__
+#include <termios.h>
 char getch() {
   struct termios oldt, newt;
   tcgetattr(STDIN_FILENO, &oldt);
@@ -69,6 +70,7 @@ char getch() {
   tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
   return c;
 }
+#endif
 
 std::string center(std::string str, size_t n) {
   return std::string((n - str.length()) / 2, ' ') + str;
@@ -351,13 +353,13 @@ int main(int argc, char **argv) {
   int history_index = -1; // Current history item
 
   while (true) {
-
     ++history_index;
     history.push_back("");
     std::string input;
     size_t input_index = 0;
     std::cout << "arithmetica> ";
     char c;
+#ifdef __linux__
     while ((c = getch()) != '\n') {
       if (c == 27) { // Escape character (arrow key)
         c = getch();
@@ -414,7 +416,16 @@ int main(int argc, char **argv) {
         std::cout << "\rarithmetica> " << input.substr(0, input_index);
       }
     }
+#endif
 
+#ifdef _WIN32
+// Fortunately, windows supports arrow keys and history during std::getline by default
+// Which is amazing, for once windows is better than linux
+// Thank you Microsoft
+    std::getline(std::cin, input);
+#endif
+
+#ifdef __linux__
     // Don't add consecutive duplicates or empty strings to history
     if (input.empty() ||
         (history.size() >= 2 && history[history.size() - 2] == input)) {
@@ -424,6 +435,7 @@ int main(int argc, char **argv) {
     }
 
     history_index = history.size() - 1;
+#endif
 
     std::cout << "\n";
 
@@ -900,5 +912,9 @@ int main(int argc, char **argv) {
     if (input.substr(0, 3) == "div") {
       // https://github.com/avighnac/math-new/blob/main/basic_math_operations/Division%20Algorithm/divide.hpp
     }
+
+#ifdef _WIN32
+    std::cout << "\n";
+#endif
   }
 }

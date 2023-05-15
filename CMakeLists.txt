@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 
 project(arithmetica-tui)
 
-option(BUILD_RELEASE "Build for a GitHub release" OFF)
+if(WIN32)
+    include_directories(${CMAKE_SOURCE_DIR}/submodules/arithmetica/src/library/)
+    include_directories(${CMAKE_SOURCE_DIR}/submodules/basic_math_operations/src/library/)
+endif(WIN32)
+
+option(BUILD_RELEASE "Build for a GitHub release" ON)
 
 add_subdirectory(src)

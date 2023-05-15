@@ -5,12 +5,12 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  modify-main-cpp:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Compile and create release
+    - name: Modify main.cpp
       run: |
         LATEST_TAG=$(curl -s "https://api.github.com/repos/avighnac/arithmetica-tui/releases/latest" | jq -r '.tag_name')
         echo $LATEST_TAG
@@ -20,12 +20,86 @@ jobs:
         AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
         echo $AUTORELEASE_NO
         sed -i "s/std::string autorelease = \".*\";/std::string autorelease = \"${AUTORELEASE_NO}\";/" src/main.cpp
+    - name: Upload main.cpp
+      uses: actions/upload-artifact@v3
+      with:
+        name: main-cpp
+        path: src/main.cpp
+  build-linux:
+    needs:
+      - modify-main-cpp
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download main.cpp
+      uses: actions/download-artifact@v2
+      with:
+        name: main-cpp
+    - name: Rewrite main.cpp
+      run: |
+        cp dist/artifacts/main-cpp/main.cpp src/main.cpp
+    - name: Compile arithmetica-tui for Linux
+      run: |
         curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica/contents/install.sh | sudo bash
         curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/basic_math_operations/contents/install.sh | sudo bash
         cmake --no-warn-unused-cli -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Release -S . -B build -G "Unix Makefiles"
         cmake --build build --config Release --target all -j 10 --
-        echo "RELEASE_NAME=$(echo $LATEST_TAG-alpha-$AUTORELEASE_NO)" >> $GITHUB_ENV
-        echo $RELEASE_NAME
+    - name: Upload executable asset for Linux
+      uses: actions/upload-artifact@v2
+      with:
+        name: arithmetica-executable-linux
+        path: build/src/arithmetica
+  build-windows:
+    needs:
+      - modify-main-cpp
+    permissions: write-all
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download main.cpp
+      uses: actions/download-artifact@v2
+      with:
+        name: main-cpp
+    - name: Rewrite main.cpp
+      run: |
+        cp dist/artifacts/main-cpp/main.cpp src/main.cpp
+    - name: Compile arithmetica-tui for Windows
+    # I've already modified the CMake files to compile 'arithmetica' and 'basic_math_operations' in Windows so we don't need install them.
+      run: |
+        cmake --no-warn-unused-cli -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S. -B. -G "MinGW Makefiles"
+        cmake --build build --config Release --target all -j 10
+    - name: Upload executable asset for Windows
+      uses: actions/upload-artifact@v2
+      with:
+        name: arithmetica-executable-windows
+        path: build/src/arithmetica.exe
+
+  create-release:
+    needs:
+      - build-linux
+      - build-windows
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download arithmetica executable for Linux
+      uses: actions/download-artifact@v2
+      with:
+        name: arithmetica-executable-linux
+    - name: Download arithmetica executable for Windows
+      uses: actions/download-artifact@v2
+      with:
+        name: arithmetica-executable-windows
+    - name: Set necessary variables
+      run: |
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/avighnac/arithmetica-tui/releases/latest" | jq -r '.tag_name')
+        echo $LATEST_TAG
+        echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD"
+        GITHUB_API_URL=$(echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD")
+        echo $GITHUB_API_URL
+        AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
+        echo $AUTORELEASE_NO
     - name: Create a GitHub (pre)release
       id: create_release
       uses: actions/create-release@v1
@@ -42,6 +116,15 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/src/arithmetica
+        asset_path: dist/artifacts/arithmetica-executable-linux/arithmetica
         asset_name: arithmetica.out
+        asset_content_type: application/x-executable
+    - name: Upload executable for Windows.
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/artifacts/arithmetica-executable-windows/arithmetica.exe
+        asset_name: arithmetica.exe
         asset_content_type: application/x-executable
