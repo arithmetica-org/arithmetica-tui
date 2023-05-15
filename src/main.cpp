@@ -234,7 +234,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
-std::string version = "0.2.0";
+std::string version = "0.3.0";
 
 std::string autorelease = "0";
 
@@ -277,7 +277,9 @@ int main(int argc, char **argv) {
       "781627963544818716509594146657438081399951815315415698694078717965617434"
       "6851280733790233250914118866552625373000522454359423064225199009";
 
-  std::vector<std::string> functions = {"eval", "add", "mul", "factor"};
+  std::vector<std::string> functions = {"eval", "add", "mul",  "factor", "sin",
+                                        "cos",  "tan", "asin", "acos",   "atan",
+                                        "sqrt", "exp", "log", "fact", "tocontfrac", "gcd", "lcm"};
 
   //   std::cout << "Welcome to arithmetica, the command line wrapper for the "
   //                "arithmetica library! ";
@@ -313,19 +315,20 @@ int main(int argc, char **argv) {
 
     if (std::string(argv[1]) == "--update-bleeding-edge") {
       std::string command;
-      #ifdef __linux__
+#ifdef __linux__
       command = "curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-                        "https://api.github.com/repos/avighnac/arithmetica-tui/"
-                        "contents/install_bleeding_edge.sh | sudo bash &";
-      int n =
-          std::system(command.c_str());
-      #endif
-      #ifdef _WIN32
+                "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                "contents/install_bleeding_edge.sh | sudo bash &";
+      int n = std::system(command.c_str());
+#endif
+#ifdef _WIN32
       int n;
-      n = std::system("cd %TEMP% && curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-                        "https://api.github.com/repos/avighnac/arithmetica-tui/"
-                        "contents/install_bleeding_edge.bat -o install_bleeding_edge.bat && install_bleeding_edge.bat && exit");
-      #endif
+      n = std::system(
+          "cd %TEMP% && curl -s -H \"Accept: application/vnd.github.v3.raw\" "
+          "https://api.github.com/repos/avighnac/arithmetica-tui/"
+          "contents/install_bleeding_edge.bat -o install_bleeding_edge.bat && "
+          "install_bleeding_edge.bat && exit");
+#endif
       std::exit(0);
     }
     if (std::string(argv[1]) == "--update-stable" ||
@@ -359,6 +362,7 @@ int main(int argc, char **argv) {
   bool degree_mode = true;
   bool enable_fractions_eval = true;
   bool verbose_eval = true;
+  bool numeric_eval = false;
 
   std::vector<std::string> history;
   int history_index = -1; // Current history item
@@ -430,9 +434,9 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef _WIN32
-// Fortunately, windows supports arrow keys and history during std::getline by default
-// Which is amazing, for once windows is better than linux
-// Thank you Microsoft
+    // Fortunately, windows supports arrow keys and history during std::getline
+    // by default Which is amazing, for once windows is better than linux Thank
+    // you Microsoft
     std::getline(std::cin, input);
 #endif
 
@@ -472,6 +476,18 @@ int main(int argc, char **argv) {
         std::cout << "sin/cos/tan <angle> - trigonometric functions\n";
         std::cout << "asin/acos/atan <number> - inverse trigonometric "
                      "functions\n";
+        std::cout << "sqrt <number> - square root\n";
+        std::cout << "exp <number> - compute e^<number>\n";
+        std::cout
+            << "log <base> <number> - compute log_<base>(<number>), or ln "
+               "(<number>) if <base> is not specified\n";
+        std::cout << "fact <number> - computes the factorial of <number>\n";
+        std::cout << "tocontfrac <number> - converts <number> to a continued "
+                     "fraction\n";
+        std::cout << "gcd <number> <number> ... - computes the greatest common "
+                     "divisor of the given numbers\n";
+        std::cout << "lcm <number> <number> ... - computes the least common "
+                     "multiple of the given numbers\n";
         std::cout
             << "\nFor help with a specific function, type help <function>\n\n";
         std::cout << "Options:\n";
@@ -484,6 +500,8 @@ int main(int argc, char **argv) {
         std::cout << "  verboseeval (include verbose explanations with steps "
                      "during eval) - "
                   << (verbose_eval ? "enabled" : "disabled") << "\n";
+        std::cout << "  numericeval (purely numeric evaluation during eval) - "
+                  << (numeric_eval ? "enabled" : "disabled") << "\n";
         std::cout << "  accuracy - " << accuracy
                   << ", change with accuracy <num>\n\n";
         continue;
@@ -510,6 +528,128 @@ int main(int argc, char **argv) {
 
     if (input == "exit" || input == "quit") {
       break;
+    }
+    if (input.substr(0, 3) == "gcd") {
+      auto tokens = tokenize(input);
+      if (tokens.size() < 2) {
+        std::cout << "Usage: gcd <number> <number> ...\n";
+        continue;
+      }
+
+      std::string gcd = tokens[1];
+      for (int i = 2; i < tokens.size(); i++) {
+        gcd = arithmetica::igcd(gcd, tokens[i]);
+      }
+
+      std::cout << "==> " << gcd << "\n";
+    }
+    if (input.substr(0, 3) == "lcm") {
+      auto tokens = tokenize(input);
+      if (tokens.size() < 2) {
+        std::cout << "Usage: lcm <number> <number> ...\n";
+        continue;
+      }
+
+      std::string lcm = tokens[1];
+      for (int i = 2; i < tokens.size(); i++) {
+        lcm = arithmetica::ilcm(lcm, tokens[i]);
+      }
+
+      std::cout << "==> " << lcm << "\n";
+    }
+    if (input.substr(0, 10) == "tocontfrac") {
+      auto tokens = tokenize(input);
+      if (tokens.size() != 2) {
+        std::cout << "Usage: tocontfrac <number>\n";
+        continue;
+      }
+
+      arithmetica::Fraction f = tokens[1];
+      auto answer = arithmetica::fraction_to_continued_fraction(f.numerator, f.denominator);
+      std::cout << "==> [" << answer[0] << "; ";
+      for (int i = 1; i < answer.size(); i++) {
+        std::cout << answer[i];
+        if (i != answer.size() - 1) {
+          std::cout << ", ";
+        }
+      }
+      std::cout << "]\n";
+    }
+    if (tokenize(input)[0] == "fact" || tokenize(input)[0] == "factorial") {
+      auto tokens = tokenize(input);
+      if (tokens.size() != 2) {
+        std::cout << "Usage: fact <number>\n";
+        continue;
+      }
+
+      if (tokens[1].find('.') != std::string::npos) {
+        std::cout << "Invalid argument: " << tokens[1] << "\n";
+        continue;
+      }
+
+      unsigned long long n;
+      try {
+        n = std::stoull(tokens[1]);
+      } catch (std::invalid_argument &e) {
+        std::cout << "Invalid argument: " << tokens[1] << "\n";
+        continue;
+      } catch (std::out_of_range &e) {
+        std::cout << "Number too large (for now): " << tokens[1] << "\n";
+        continue;
+      }
+
+      if (n == 0) {
+        std::cout << "==> 1\n";
+        continue;
+      }
+
+      std::cout << "==> " << arithmetica::factorial(n) << "\n";
+    }
+    if (input.substr(0, 3) == "log") {
+      auto tokens = tokenize(input);
+      if (tokens.size() != 2 && tokens.size() != 3) {
+        std::cout << "Usage: log <base> <number>\n";
+        continue;
+      }
+
+      if (tokens.size() == 2) {
+        std::cout << "==> "
+                  << arithmetica::natural_logarithm(tokens[1], accuracy)
+                  << "\n";
+      } else {
+        std::cout
+            << "==> "
+            << round_decimal(
+                   basic_math_operations::divide(
+                       arithmetica::natural_logarithm(tokens[2], accuracy + 3),
+                       arithmetica::natural_logarithm(tokens[1], accuracy + 3),
+                       accuracy),
+                   accuracy)
+            << "\n";
+      }
+    }
+    if (input.substr(0, 3) == "exp") {
+      auto tokens = tokenize(input);
+      if (tokens.size() != 2) {
+        std::cout << "Usage: exp <number>\n";
+        continue;
+      }
+      std::cout << "==> " << arithmetica::exponential(tokens[1], accuracy)
+                << "\n";
+    }
+    if (input.substr(0, 4) == "sqrt") {
+      auto tokens = tokenize(input);
+      if (tokens.size() != 2) {
+        std::cout << "Usage: sqrt <number>\n";
+        continue;
+      }
+      std::cout << "==> " << arithmetica::square_root(tokens[1], accuracy)
+                << "\n";
+    }
+    if (input == "numericeval") {
+      numeric_eval = !numeric_eval;
+      std::cout << "numeric evaluation is now "
+                << (numeric_eval ? "enabled" : "disabled") << "\n";
     }
     if (input == "verboseeval") {
       verbose_eval = !verbose_eval;
@@ -621,7 +761,7 @@ int main(int argc, char **argv) {
       std::cout << "accuracy is now " << accuracy << "\n";
     }
 
-    if (input.substr(0, 6) == "factor") {
+    if (tokenize(input)[0] == "factor" || tokenize(input)[0] == "factorize") {
       if (input.length() < 8) {
         std::cout << "Example usage: factor x^2+3x+2 => (x+1)(x+2)\n";
         continue;
@@ -656,6 +796,15 @@ int main(int argc, char **argv) {
         continue;
       }
       std::string expression = input.substr(5);
+
+      if (numeric_eval) {
+        std::cout << " ==> "
+                  << arithmetica::simplify_arithmetic_expression(expression, 0,
+                                                                 accuracy)
+                  << "\n";
+        continue;
+      }
+
       if (!show_steps) {
         std::string result = arithmetica::simplify_arithmetic_expression(
             expression, 1, accuracy);
@@ -823,8 +972,10 @@ int main(int argc, char **argv) {
       if (!show_steps) {
         if (tokens[1].find('/') == std::string::npos &&
             tokens[2].find('/') == std::string::npos) {
-          std::cout << "==> " << basic_math_operations::multiply(tokens[1], tokens[2]) << "\n";
-            }
+          std::cout << "==> "
+                    << basic_math_operations::multiply(tokens[1], tokens[2])
+                    << "\n";
+        }
       } else {
         if (tokens[1].find('/') != std::string::npos ||
             tokens[2].find('/') != std::string::npos) {
