@@ -38,6 +38,7 @@ jobs:
         name: main-cpp
     - name: Rewrite main.cpp
       run: |
+        ls
         cp dist/artifacts/main-cpp/main.cpp src/main.cpp
     - name: Compile arithmetica-tui for Linux
       run: |
