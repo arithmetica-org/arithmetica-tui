@@ -38,6 +38,8 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: main-cpp
+    - name: Move main.cpp to src
+      run: mv main.cpp src
     - name: Compile arithmetica-tui for Linux
       run: |
         curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica/contents/install.sh | sudo bash
@@ -62,6 +64,8 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: main-cpp
+    - name: Move main.cpp to src
+      run: mv main.cpp src
     - name: Set up NASM
       uses: ilammy/setup-nasm@v1.3.0
     - name: Clone submodules
