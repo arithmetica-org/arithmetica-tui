@@ -58,6 +58,8 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: main-cpp
+    - name: Set up NASM
+      uses: ilammy/setup-nasm@v1.3.0
     - name: Clone submodules
       run: git submodule update --init --recursive
     - name: Compile arithmetica-tui for Windows
