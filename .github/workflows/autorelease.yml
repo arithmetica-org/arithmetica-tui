@@ -58,6 +58,8 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: main-cpp
+    - name: Clone submodules
+      run: git submodule update --init --recursive
     - name: Compile arithmetica-tui for Windows
     # I've already modified the CMake files to compile 'arithmetica' and 'basic_math_operations' in Windows so we don't need install them.
       run: |
