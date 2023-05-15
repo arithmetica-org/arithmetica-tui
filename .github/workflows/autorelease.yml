@@ -36,10 +36,6 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: main-cpp
-    - name: Rewrite main.cpp
-      run: |
-        ls
-        cp dist/artifacts/main-cpp/main.cpp src/main.cpp
     - name: Compile arithmetica-tui for Linux
       run: |
         curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica/contents/install.sh | sudo bash
@@ -62,9 +58,6 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: main-cpp
-    - name: Rewrite main.cpp
-      run: |
-        cp dist/artifacts/main-cpp/main.cpp src/main.cpp
     - name: Compile arithmetica-tui for Windows
     # I've already modified the CMake files to compile 'arithmetica' and 'basic_math_operations' in Windows so we don't need install them.
       run: |
@@ -101,6 +94,8 @@ jobs:
         echo $GITHUB_API_URL
         AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
         echo $AUTORELEASE_NO
+        sudo apt install tree
+        tree
     - name: Create a GitHub (pre)release
       id: create_release
       uses: actions/create-release@v1
