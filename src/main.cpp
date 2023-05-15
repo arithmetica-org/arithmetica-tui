@@ -319,7 +319,7 @@ int main(int argc, char **argv) {
                         "contents/install_bleeding_edge.sh | sudo bash &";
       #endif
       #ifdef _WIN32
-      command = "powershell -Command \"Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/avighnac/arithmetica-tui/main/install_bleeding_edge.bat' -OutFile 'install_bleeding_edge.bat'; Start-Process 'install_bleeding_edge.bat'; exit\"";
+      command = "powershell -Command \"Invoke-WebRequest -Uri 'https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_bleeding_edge.bat' | ForEach-Object { $_.Content } | Out-File -Encoding ASCII 'install_bleeding_edge.bat'; Start-Process 'cmd' '/C install_bleeding_edge.bat'; exit\"";
       #endif
       int n =
           std::system(command.c_str());
