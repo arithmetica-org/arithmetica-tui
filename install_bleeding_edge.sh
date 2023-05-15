@@ -61,4 +61,4 @@ cp arithmetica.out $PREFIX/bin/arithmetica
 
 # Delete the temporary directory
 cd ..
-rm -rf basic_math_operations-install
+rm -rf arithmetica-tui-install

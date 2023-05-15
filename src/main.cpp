@@ -310,11 +310,19 @@ int main(int argc, char **argv) {
       std::cout << version << "\n";
       return 0;
     }
+
     if (std::string(argv[1]) == "--update-bleeding-edge") {
+      std::string command;
+      #ifdef __linux__
+      command = "curl -s -H \"Accept: application/vnd.github.v3.raw\" "
+                        "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                        "contents/install_bleeding_edge.sh | sudo bash &";
+      #endif
+      #ifdef _WIN32
+      command = "powershell -Command \"Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/avighnac/arithmetica-tui/main/install_bleeding_edge.bat' -OutFile 'install_bleeding_edge.bat'; Start-Process 'install_bleeding_edge.bat'; exit\"";
+      #endif
       int n =
-          std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-                      "https://api.github.com/repos/avighnac/arithmetica-tui/"
-                      "contents/install_bleeding_edge.sh | sudo bash &");
+          std::system(command.c_str());
       std::exit(0);
     }
     if (std::string(argv[1]) == "--update-stable" ||
