@@ -65,7 +65,7 @@ jobs:
     - name: Compile arithmetica-tui for Windows
     # I've already modified the CMake files to compile 'arithmetica' and 'basic_math_operations' in Windows so we don't need install them.
       run: |
-        cmake --no-warn-unused-cli -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S. -B. -G "MinGW Makefiles"
+        cmake --no-warn-unused-cli -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S. -B build -G "MinGW Makefiles"
         cmake --build build --config Release --target all -j 10
     - name: Upload executable asset for Windows
       uses: actions/upload-artifact@v2
