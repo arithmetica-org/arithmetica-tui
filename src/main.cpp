@@ -821,7 +821,10 @@ int main(int argc, char **argv) {
       }
 
       if (!show_steps) {
-        std::cout << "nah bro\n";
+        if (tokens[1].find('/') == std::string::npos &&
+            tokens[2].find('/') == std::string::npos) {
+          std::cout << "==> " << basic_math_operations::multiply(tokens[1], tokens[2]) << "\n";
+            }
       } else {
         if (tokens[1].find('/') != std::string::npos ||
             tokens[2].find('/') != std::string::npos) {
