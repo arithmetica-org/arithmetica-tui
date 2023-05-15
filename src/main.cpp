@@ -317,12 +317,15 @@ int main(int argc, char **argv) {
       command = "curl -s -H \"Accept: application/vnd.github.v3.raw\" "
                         "https://api.github.com/repos/avighnac/arithmetica-tui/"
                         "contents/install_bleeding_edge.sh | sudo bash &";
-      #endif
-      #ifdef _WIN32
-      command = "powershell -Command \"Invoke-WebRequest -Uri 'https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_bleeding_edge.bat' | ForEach-Object { $_.Content } | Out-File -Encoding ASCII 'install_bleeding_edge.bat'; Start-Process 'cmd' '/C install_bleeding_edge.bat'; exit\"";
-      #endif
       int n =
           std::system(command.c_str());
+      #endif
+      #ifdef _WIN32
+      int n;
+      n = std::system("cd %TEMP% && curl -s -H \"Accept: application/vnd.github.v3.raw\" "
+                        "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                        "contents/install_bleeding_edge.bat -o install_bleeding_edge.bat && install_bleeding_edge.bat && exit");
+      #endif
       std::exit(0);
     }
     if (std::string(argv[1]) == "--update-stable" ||
