@@ -98,6 +98,8 @@ jobs:
         echo $GITHUB_API_URL
         AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
         echo $AUTORELEASE_NO
+        echo "RELEASE_NAME=$(echo $LATEST_TAG-alpha-$AUTORELEASE_NO)" >> $GITHUB_ENV
+        echo $RELEASE_NAME
         sudo apt install tree
         tree
     - name: Create a GitHub (pre)release
@@ -116,7 +118,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/artifacts/arithmetica-executable-linux/arithmetica
+        asset_path: arithmetica
         asset_name: arithmetica.out
         asset_content_type: application/x-executable
     - name: Upload executable for Windows.
@@ -125,6 +127,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/artifacts/arithmetica-executable-windows/arithmetica.exe
+        asset_path: arithmetica.exe
         asset_name: arithmetica.exe
         asset_content_type: application/x-executable
