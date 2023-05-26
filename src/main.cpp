@@ -478,7 +478,9 @@ int main(int argc, char **argv) {
     history_index = history.size() - 1;
 #endif
 
+#ifdef __linux__
     std::cout << "\n";
+#endif
 
     // remove front and back whitespace
     input.erase(0, input.find_first_not_of(' '));
@@ -822,7 +824,8 @@ int main(int argc, char **argv) {
         std::cout << "Example usage: eval 2+2 => 4\n";
         continue;
       }
-      std::string expression = input.substr(5);
+      auto tokens = tokenize(input);
+      std::string &expression = tokens[1];
 
       if (numeric_eval) {
         std::cout << " ==> "
@@ -850,12 +853,16 @@ int main(int argc, char **argv) {
       } else {
         std::vector<std::string> steps;
         eval_with_steps::simplify_arithmetic_expression(
-            expression.c_str(), 1, accuracy, steps, verbose_eval);
-        std::cout << "\n";
+            expression.c_str(), 1, accuracy, steps, verbose_eval);\
+        std::cout << "\n" << (verbose_eval ? "Task: Simplify " : "==> ") << expression << "\n" << (verbose_eval ? "\n" : "");
+        std::string s;
         for (auto &i : steps) {
-          std::cout << i << "\n";
+          s += i + "\n";
         }
-        std::cout << "\n";
+        std::cout << s;
+        if (s.length() > 1 && s[s.length() - 2] != '\n') {
+          std::cout << "\n";
+        }
       }
     }
     if (input.substr(0, 3) == "add") {
@@ -1104,9 +1111,5 @@ int main(int argc, char **argv) {
     if (input.substr(0, 3) == "div") {
       // https://github.com/avighnac/math-new/blob/main/basic_math_operations/Division%20Algorithm/divide.hpp
     }
-
-#ifdef _WIN32
-    std::cout << "\n";
-#endif
   }
 }

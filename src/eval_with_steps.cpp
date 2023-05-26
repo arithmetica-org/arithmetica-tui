@@ -410,9 +410,11 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
           (char *)realloc(simplifiedInnerExpression,
                           n + strlen(innerExpressionFraction.denominator) + 2);
       strcpy(simplifiedInnerExpression, innerExpressionFraction.numerator);
-      strcpy(simplifiedInnerExpression + n, "/");
-      strcpy(simplifiedInnerExpression + n + 1,
-             innerExpressionFraction.denominator);
+      if (strcmp(innerExpressionFraction.denominator, "1")) { // Don't include the denominator if it's 1
+        strcpy(simplifiedInnerExpression + n, "/");
+        strcpy(simplifiedInnerExpression + n + 1,
+              innerExpressionFraction.denominator);
+      }
       // Change division to multiplication.
       expression[start - 1] = '*';
 
@@ -479,10 +481,12 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
         simplifiedExponentiation[0] = '[';
       strncpy(simplifiedExponentiation + squareBrackets, answer.numerator,
               strlen(answer.numerator));
-      simplifiedExponentiation[strlen(answer.numerator) + squareBrackets] = '/';
-      strncpy(simplifiedExponentiation + strlen(answer.numerator) + 1 +
-                  squareBrackets,
-              answer.denominator, strlen(answer.denominator));
+      if (strcmp(answer.denominator, "1")) {
+        simplifiedExponentiation[strlen(answer.numerator) + squareBrackets] = '/';
+        strncpy(simplifiedExponentiation + strlen(answer.numerator) + 1 +
+                    squareBrackets,
+                answer.denominator, strlen(answer.denominator));
+      }
       if (squareBrackets)
         simplifiedExponentiation[strlen(simplifiedExponentiation)] = ']';
       delete_fraction(fraction1);
@@ -591,9 +595,8 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
 
       if (do_step) {
         ++step;
-        steps.push_back("Step #" + std::to_string(step) + ": Evaluate (" +
-                        std::string(leftArgument) + ")" + std::string(1, sign) +
-                        "(" + std::string(rightArgument) + ")");
+        steps.push_back("Step #" + std::to_string(step) + ": Evaluate " +
+                        std::string(leftArgument) + std::string(1, sign) + std::string(rightArgument));
       }
       char *operationResult;
       if (outputType == 0) {
@@ -635,9 +638,11 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
         operationResult = (char *)calloc(
             strlen(answer.numerator) + strlen(answer.denominator) + 2, 1);
         strncpy(operationResult, answer.numerator, strlen(answer.numerator));
-        operationResult[strlen(answer.numerator)] = '/';
-        strncpy(operationResult + strlen(answer.numerator) + 1,
-                answer.denominator, strlen(answer.denominator));
+        if (strcmp(answer.denominator, "1")) {
+          operationResult[strlen(answer.numerator)] = '/';
+          strncpy(operationResult + strlen(answer.numerator) + 1,
+                  answer.denominator, strlen(answer.denominator));
+        }
 
         delete_fraction(fraction1);
         delete_fraction(fraction2);
