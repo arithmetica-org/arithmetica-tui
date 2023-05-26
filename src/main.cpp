@@ -6,6 +6,25 @@
 #include <unistd.h>
 #include <vector>
 
+#ifdef __linux__
+#include <sys/ioctl.h>
+#endif
+#ifdef _WIN32
+#include <windows.h>
+#endif
+int get_console_width() {
+#ifdef __linux__
+  struct winsize w;
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+  return w.ws_col;
+#endif
+#ifdef _WIN32
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+  return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+#endif
+}
+
 static void replace_all(std::string &str, const std::string &from,
                         const std::string &to) {
   if (from.empty())
@@ -277,9 +296,10 @@ int main(int argc, char **argv) {
       "781627963544818716509594146657438081399951815315415698694078717965617434"
       "6851280733790233250914118866552625373000522454359423064225199009";
 
-  std::vector<std::string> functions = {"eval", "add", "mul",  "factor", "sin",
-                                        "cos",  "tan", "asin", "acos",   "atan",
-                                        "sqrt", "exp", "log", "fact", "tocontfrac", "gcd", "lcm"};
+  std::vector<std::string> functions = {
+      "eval", "add",  "mul",        "factor", "sin",  "cos",
+      "tan",  "asin", "acos",       "atan",   "sqrt", "exp",
+      "log",  "fact", "tocontfrac", "gcd",    "lcm"};
 
   //   std::cout << "Welcome to arithmetica, the command line wrapper for the "
   //                "arithmetica library! ";
@@ -416,8 +436,11 @@ int main(int argc, char **argv) {
             // Remove the character in front of [input_index]
             input.erase(input_index, 1);
           }
+          for (size_t i = 0; i < (input.length() + 13) / get_console_width();
+               ++i) {
+            std::cout << "\33[2K\r\033[A";
+          }
           std::cout << "\33[2K\rarithmetica> " << input;
-          std::cout << "\rarithmetica> " << input.substr(0, input_index);
         }
       } else {
         // Add the character to the string in front of [input_index]
@@ -427,8 +450,11 @@ int main(int argc, char **argv) {
           input.insert(input_index, 1, c);
         }
         input_index++;
+        for (size_t i = 0; i < (input.length() + 11) / get_console_width();
+             ++i) {
+          std::cout << "\33[2K\r\033[A";
+        }
         std::cout << "\33[2K\rarithmetica> " << input;
-        std::cout << "\rarithmetica> " << input.substr(0, input_index);
       }
     }
 #endif
@@ -565,7 +591,8 @@ int main(int argc, char **argv) {
       }
 
       arithmetica::Fraction f = tokens[1];
-      auto answer = arithmetica::fraction_to_continued_fraction(f.numerator, f.denominator);
+      auto answer = arithmetica::fraction_to_continued_fraction(f.numerator,
+                                                                f.denominator);
       std::cout << "==> [" << answer[0] << "; ";
       for (int i = 1; i < answer.size(); i++) {
         std::cout << answer[i];
