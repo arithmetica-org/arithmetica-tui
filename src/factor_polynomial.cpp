@@ -1,4 +1,4 @@
-#include "algebraic_number_class.hpp"
+#include "algnum.hpp"
 #include <arithmetica.h>
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
@@ -11,14 +11,27 @@ typedef arithmetica::Fraction am_frac;
 typedef basic_math_operations::BMONum bmo_num;
 
 // Create a power compare function for algebraic_term to help sort the terms.
-bool power_compare(const algebraic_num::algebraic_number &a,
-                   const algebraic_num::algebraic_number &b) {
+bool power_compare(const algnum::algnum &a, const algnum::algnum &b) {
   // Note that we're assuming each term only has one (or none) variable, and
   // that the variable is the same.
 
   // We are also assuming that the degrees are *never* the same.
 
-  return a.variablePart.begin()->second > b.variablePart.begin()->second;
+  std::string s_1 = "0", s_2 = "0";
+
+  if (!a.variables.empty()) {
+    algnum::algexpr p_1 = a.variables.begin()->power;
+    s_1 = p_1.latex();
+  }
+  if (!b.variables.empty()) {
+    algnum::algexpr p_2 = b.variables.begin()->power;
+    s_2 = p_2.latex();
+  }
+
+  // This is extremely hacky and won't work for variable powers ... sad, will
+  // fix later.
+  bool cond = basic_math_operations::subtract(s_1, s_2)[0] != '-';
+  return cond;
 }
 
 std::vector<am_frac> divide_polynomial(const std::vector<am_frac> &coefficients,
@@ -36,7 +49,7 @@ std::vector<am_frac> divide_polynomial(const std::vector<am_frac> &coefficients,
 }
 
 std::string form_printable_polynomial(std::vector<am_frac> &coeffs,
-                                      char variable) {
+                                      std::string variable) {
   if (coeffs.empty()) {
     return "0";
   }
@@ -62,7 +75,7 @@ std::string form_printable_polynomial(std::vector<am_frac> &coeffs,
       answer += "1";
     }
     if (coeffs.size() - i - 1 != 0) {
-      answer += std::string(1, variable);
+      answer += variable;
       if (coeffs.size() - i - 1 != 1) {
         answer += "^" + std::to_string(coeffs.size() - i - 1);
       }
@@ -71,10 +84,9 @@ std::string form_printable_polynomial(std::vector<am_frac> &coeffs,
   return answer;
 }
 
-std::vector<std::string>
-multiply_polynomials_with_steps(std::vector<am_frac> p1,
-                                std::vector<am_frac> p2,
-                                std::vector<am_frac> &answer, char variable) {
+std::vector<std::string> multiply_polynomials_with_steps(
+    std::vector<am_frac> p1, std::vector<am_frac> p2,
+    std::vector<am_frac> &answer, std::string variable) {
   std::string p1_str = form_printable_polynomial(p1, variable);
   std::string p2_str = form_printable_polynomial(p2, variable);
 
@@ -108,7 +120,7 @@ multiply_polynomials_with_steps(std::vector<am_frac> p1,
       step += "1";
     }
     if (p1.size() - i - 1 != 0) {
-      step += std::string(1, variable);
+      step += variable;
       if (p1.size() - i - 1 != 1) {
         step += "^" + std::to_string(p1.size() - i - 1);
       }
@@ -166,26 +178,20 @@ multiply_polynomials_with_steps(std::vector<am_frac> p1,
 
 std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps) {
-  auto terms = algebraic_num::get_terms(expr);
-  if (terms.empty()) {
+  algnum::algexpr e(expr.c_str());
+  if (e.size() == 0) {
     std::cerr << "Error: " << expr << " is not a valid algebraic expression.\n";
     return "ERROR";
   }
 
-  // Let's remove all terms that have their constant part as '0' and their
-  // variable part empty.
-  for (int i = 0; i < terms.size(); i++) {
-    if (terms[i].constantPart == "0" && terms[i].variablePart.empty()) {
-      terms.erase(terms.begin() + i);
-      i--;
-    }
-  }
+  // Combine like terms
+  e = e.combine_like_terms(e);
 
-  char variable = '?';
-  for (auto &i : terms) {
+  std::string variable = "?";
+  for (auto &i : e.expr) {
     bool found = false;
-    for (auto &i : i.variablePart) {
-      variable = i.first;
+    for (auto &i : i.variables) {
+      variable = i.var;
       found = true;
       break;
     }
@@ -194,51 +200,62 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
     }
   }
 
-  if (variable == '?') {
+  if (variable == "?") {
     std::cerr << "Error: " << expr
               << " is not a valid algebraic expression. No variable found.\n";
     return "ERROR";
   }
 
-  for (auto &i : terms) {
+  for (auto &i : e.expr) {
     bool failed = false;
-    for (auto &i : i.variablePart) {
-      if (i.first != variable) {
+    for (auto &i : i.variables) {
+      if (i.var != variable) {
         failed = true;
         break;
       }
     }
-    if (i.variablePart.size() > 1 || failed) {
+    if (i.variables.size() > 1 || failed) {
       std::cerr << "Error: " << expr
                 << " is not a single variable polynomial. Multi variable "
                    "polynomials are not supported yet!\n";
-      std::cerr << "Failed on term " << i.get_formatted_number() << "\n";
+      std::cerr << "Failed on term " << i.latex() << "\n";
       return "ERROR";
     }
   }
 
   // Sort the terms by degree.
-  std::sort(terms.begin(), terms.end(), power_compare);
+  auto expr_vec = e.expr;
+  std::sort(expr_vec.begin(), expr_vec.end(), power_compare);
 
-  int _size = terms[0].variablePart.begin()->second + 1;
+  // This will also not work for variable powers
+  int _size = std::stoi(
+      (bmo_num(expr_vec[0].variables.begin()->power.latex()) + bmo_num("1"))
+          .number);
   std::vector<am_frac> frac_coefficients;
   char **coefficients = (char **)malloc(sizeof(char *) * _size);
-  float power = terms[0].variablePart.begin()->second + 1;
+  float power = _size;
   size_t ptr = 0;
-  for (int i = 0; i < terms.size(); i++) {
+  for (int i = 0; i < expr_vec.size(); i++) {
     if (i != 0) {
-      for (int j = 0; j < terms[i - 1].variablePart.begin()->second -
-                              terms[i].variablePart.begin()->second - 1;
-           j++) {
+      std::string s_1 = "0", s_2 = "0";
+      if (!expr_vec[i - 1].variables.empty()) {
+        s_1 = expr_vec[i - 1].variables.begin()->power.latex();
+      }
+      if (!expr_vec[i].variables.empty()) {
+        s_2 = expr_vec[i].variables.begin()->power.latex();
+      }
+      auto temp = bmo_num(s_1) - bmo_num(s_2);
+      for (int j = 0; j < std::stoi(temp.number) - 1; j++) {
         coefficients[ptr] = (char *)malloc(sizeof(char) * 2);
         strcpy(coefficients[ptr], "0");
         ptr++;
       }
     }
 
-    coefficients[ptr] =
-        (char *)malloc(sizeof(char) * terms[i].constantPart.length());
-    strcpy(coefficients[ptr], terms[i].constantPart.c_str());
+    coefficients[ptr] = (char *)malloc(
+        sizeof(char) * expr_vec[i].constant.to_string().length());
+    std::string constant_str = expr_vec[i].constant.to_string();
+    strcpy(coefficients[ptr], constant_str.c_str());
     ptr++;
   }
 
@@ -333,6 +350,9 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
         if (string_factors[k] != "(1)") {
           full_step += string_factors[k];
         }
+      }
+      if (full_step.length() > 2) {
+        full_step = full_step.substr(1, full_step.length() - 2);
       }
       steps.push_back(full_step);
     }

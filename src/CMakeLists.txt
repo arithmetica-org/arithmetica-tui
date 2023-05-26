@@ -6,6 +6,7 @@ set(sources
     main.cpp
     factor_polynomial.cpp
     eval_with_steps.cpp
+    algnum.cpp
 )
 
 add_executable(arithmetica-tui ${sources})

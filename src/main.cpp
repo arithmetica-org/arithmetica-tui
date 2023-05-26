@@ -795,10 +795,15 @@ int main(int argc, char **argv) {
         std::cout << "Example usage: factor x^2+3x+2 => (x+1)(x+2)\n";
         continue;
       }
-      std::string expression = input.substr(7);
+      auto tokens = tokenize(input);
+      std::string expression;
+      for (size_t i = 1; i < tokens.size(); ++i) {
+        expression += tokens[i];
+      }
       std::vector<std::string> steps;
       std::string factored = arithmetica_factor_polynomial::factor_polynomial(
           expression, steps, show_steps);
+      std::cout << "\n";
       if (factored != "ERROR") {
         steps.push_back(factored);
         for (auto &i : steps) {
@@ -807,6 +812,7 @@ int main(int argc, char **argv) {
           std::cout << "==> " << i << "\n";
         }
       }
+      std::cout << "\n";
     }
 
     if (input == "showsteps") {
@@ -853,8 +859,11 @@ int main(int argc, char **argv) {
       } else {
         std::vector<std::string> steps;
         eval_with_steps::simplify_arithmetic_expression(
-            expression.c_str(), 1, accuracy, steps, verbose_eval);\
-        std::cout << "\n" << (verbose_eval ? "Task: Simplify " : "==> ") << expression << "\n" << (verbose_eval ? "\n" : "");
+            expression.c_str(), 1, accuracy, steps, verbose_eval);
+        std::cout << "\n"
+                  << (verbose_eval ? "Task: Simplify " : "==> ") << expression
+                  << "\n"
+                  << (verbose_eval ? "\n" : "");
         std::string s;
         for (auto &i : steps) {
           s += i + "\n";
