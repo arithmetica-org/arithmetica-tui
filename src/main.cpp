@@ -860,12 +860,20 @@ int main(int argc, char **argv) {
         std::vector<std::string> steps;
         eval_with_steps::simplify_arithmetic_expression(
             expression.c_str(), 1, accuracy, steps, verbose_eval);
+        replace_all(expression, "+", " + ");
+        replace_all(expression, "-", " - ");
+        replace_all(expression, "^ - ", "^-");
+        replace_all(expression, "*", " \u00d7 ");
         std::cout << "\n"
                   << (verbose_eval ? "Task: Simplify " : "==> ") << expression
                   << "\n"
                   << (verbose_eval ? "\n" : "");
         std::string s;
         for (auto &i : steps) {
+          replace_all(i, "+", " + ");
+          replace_all(i, "-", " - ");
+          replace_all(i, "^ - ", "^-");
+          replace_all(i, "*", " \u00d7 ");
           s += i + "\n";
         }
         std::cout << s;
