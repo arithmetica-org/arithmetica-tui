@@ -5,15 +5,17 @@ A command-line wrapper for the [arithmetica library](https://github.com/avighnac
 
 To install the latest stable version, run:
 ```
-curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_stable.sh | sudo bash
+curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/arithmetica-org/arithmetica-tui/contents/install_stable.sh | sudo bash
 ```
 
 If you want to install the bleeding edge version, run:
 ```
-curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica-tui/contents/install_bleeding_edge.sh | sudo bash
+curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/arithmetica-org/arithmetica-tui/contents/install_bleeding_edge.sh | sudo bash
 ```
 
 # Features
+<h1> 🔴 For a good demonstration, go visit this tool's website <a href="https://arithmetica-org.github.io/arithmetica-tui-website/">here</a>! 🔴 </h1>
+
 ## Factorize polynomials (with steps and without)
 Arithmetica can currently factorize any degree single variable polynomials!
 ### With steps
