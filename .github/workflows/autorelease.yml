@@ -12,10 +12,10 @@ jobs:
     - uses: actions/checkout@v3
     - name: Modify main.cpp
       run: |
-        LATEST_TAG=$(curl -s "https://api.github.com/repos/avighnac/arithmetica-tui/releases/latest" | jq -r '.tag_name')
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/arithmetica-org/arithmetica-tui/releases/latest" | jq -r '.tag_name')
         echo $LATEST_TAG
-        echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD"
-        GITHUB_API_URL=$(echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD")
+        echo "https://api.github.com/repos/arithmetica-org/arithmetica-tui/compare/$LATEST_TAG...HEAD"
+        GITHUB_API_URL=$(echo "https://api.github.com/repos/arithmetica-org/arithmetica-tui/compare/$LATEST_TAG...HEAD")
         echo $GITHUB_API_URL
         AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
         echo $AUTORELEASE_NO
@@ -42,7 +42,7 @@ jobs:
       run: mv main.cpp src
     - name: Compile arithmetica-tui for Linux
       run: |
-        curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/arithmetica/contents/install.sh | sudo bash
+        curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/arithmetica-org/arithmetica/contents/install.sh | sudo bash
         curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/basic_math_operations/contents/install.sh | sudo bash
         cmake --no-warn-unused-cli -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Release -S . -B build -G "Unix Makefiles"
         cmake --build build --config Release --target all -j 10 --
@@ -99,10 +99,10 @@ jobs:
         name: arithmetica-executable-windows
     - name: Set necessary variables
       run: |
-        LATEST_TAG=$(curl -s "https://api.github.com/repos/avighnac/arithmetica-tui/releases/latest" | jq -r '.tag_name')
+        LATEST_TAG=$(curl -s "https://api.github.com/repos/arithmetica-org/arithmetica-tui/releases/latest" | jq -r '.tag_name')
         echo $LATEST_TAG
-        echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD"
-        GITHUB_API_URL=$(echo "https://api.github.com/repos/avighnac/arithmetica-tui/compare/$LATEST_TAG...HEAD")
+        echo "https://api.github.com/repos/arithmetica-org/arithmetica-tui/compare/$LATEST_TAG...HEAD"
+        GITHUB_API_URL=$(echo "https://api.github.com/repos/arithmetica-org/arithmetica-tui/compare/$LATEST_TAG...HEAD")
         echo $GITHUB_API_URL
         AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
         echo $AUTORELEASE_NO
