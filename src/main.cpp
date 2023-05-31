@@ -862,6 +862,7 @@ int main(int argc, char **argv) {
             expression.c_str(), 1, accuracy, steps, verbose_eval);
         replace_all(expression, "+", " + ");
         replace_all(expression, "-", " - ");
+        replace_all(expression, "( - ", "(-");
         replace_all(expression, "^ - ", "^-");
         replace_all(expression, "*", " \u00d7 ");
         std::cout << "\n"
@@ -872,6 +873,7 @@ int main(int argc, char **argv) {
         for (auto &i : steps) {
           replace_all(i, "+", " + ");
           replace_all(i, "-", " - ");
+          replace_all(i, "( - ", "(-");
           replace_all(i, "^ - ", "^-");
           replace_all(i, "*", " \u00d7 ");
           s += i + "\n";
