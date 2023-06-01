@@ -14,7 +14,7 @@ curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/
 ```
 
 # Features
-<h1> 🔴 For a good demonstration, go visit this tool's website <a href="https://arithmetica-org.github.io/arithmetica-tui-website/">here</a>! 🔴 </h1>
+<h1> 🔴 For a good demonstration, go visit this tool's website <a href="https://arithmetica-org.github.io/arithmetica-website/">here</a>! 🔴 </h1>
 
 ## Factorize polynomials (with steps and without)
 Arithmetica can currently factorize any degree single variable polynomials!
