@@ -1,6 +1,7 @@
 #include "algnum.hpp"
 #include <algorithm>
 #include <arithmetica.hpp>
+#include <fstream>
 #include <basic_math_operations.hpp>
 #include <iostream>
 #include <unistd.h>
@@ -155,7 +156,7 @@ void print_result(std::string str) {
 }
 
 void print_expression(std::vector<std::string> terms,
-                      std::vector<std::string> signs, int padding) {
+                      std::vector<std::string> signs, int padding, std::ofstream *file = NULL) {
   signs.push_back("");
   std::vector<std::string> expression = {"", "", ""};
   for (size_t i = 0; i < terms.size(); i++) {
@@ -168,6 +169,12 @@ void print_expression(std::vector<std::string> terms,
   }
   for (auto i = 1; i < expression.size(); ++i) {
     expression[i] = std::string(padding, ' ') + expression[i];
+  }
+  if (file != NULL) {
+    *file << expression[0] << "\n"
+         << expression[1] << "\n"
+         << expression[2] << "\n";
+    return;
   }
   std::cout << expression[0] << "\n"
             << expression[1] << "\n"
@@ -300,6 +307,10 @@ int main(int argc, char **argv) {
       "eval", "add",  "mul",        "factor", "sin",  "cos",
       "tan",  "asin", "acos",       "atan",   "sqrt", "exp",
       "log",  "fact", "tocontfrac", "gcd",    "lcm"};
+  bool from_file = false;
+  bool to_file = false;
+  std::ifstream input_file;
+  std::ofstream output_file;
 
   //   std::cout << "Welcome to arithmetica, the command line wrapper for the "
   //                "arithmetica library! ";
@@ -319,7 +330,7 @@ int main(int argc, char **argv) {
     printable_version += version;
   }
 
-  if (argc == 2) {
+  if (argc >= 2) {
     if (std::string(argv[1]) == "--version") {
       std::cout << printable_version << "\n";
       return 0;
@@ -359,6 +370,44 @@ int main(int argc, char **argv) {
                       "contents/install_stable.sh | sudo bash &");
       std::exit(0);
     }
+
+    for (int i = 0; i < argc; i++) {
+      if (std::string(argv[i]) == "-o") {
+        if (argc < i + 1) {
+          std::cout << "Usage: arithmetica -o [file]\n";
+          std::exit(0);
+        }
+
+        to_file = true;
+        std::string filename = argv[i + 1];
+        output_file.open(filename);
+
+        if (!output_file.good()) {
+          std::cerr << "Error: There was a problem opening the file \"" << filename
+                    << "\" for writing.\n";
+          std::exit(1);
+        }
+      }
+    }
+    if (std::string(argv[1]) == "-i") {
+      if (argc < 3) {
+        std::cout << "Usage: arithmetica -i [file]\n";
+        std::exit(0);
+      }
+      from_file = true;
+      std::string filename = argv[2];
+      input_file.open(filename);
+      if (!input_file.good()) {
+        std::cerr << "Error: File \"" << filename << "\" not found.\n";
+        std::exit(1);
+      }
+    }
+  }
+
+  if (argc != 1 && (!from_file)) {
+    std::cout << "Usage: arithmetica [--version] [--get-tag] [--update] "
+                 "[--update-bleeding-edge] [-i] [-o]\n";
+    std::exit(0);
   }
 
   std::cout << printable_version;
@@ -393,6 +442,18 @@ int main(int argc, char **argv) {
     std::string input;
     size_t input_index = 0;
     std::cout << "arithmetica> ";
+
+    if (from_file) {
+      if (input_file.eof()) {
+        break;
+      }
+
+      std::getline(input_file, input);
+      std::cout << input << "\n";
+
+      goto after_input;
+    }
+
     char c;
 #ifdef __linux__
     while ((c = getch()) != '\n') {
@@ -481,6 +542,8 @@ int main(int argc, char **argv) {
 #ifdef __linux__
     std::cout << "\n";
 #endif
+
+after_input:
 
     // remove front and back whitespace
     input.erase(0, input.find_first_not_of(' '));
@@ -672,8 +735,11 @@ int main(int argc, char **argv) {
         std::cout << "Usage: sqrt <number>\n";
         continue;
       }
-      std::cout << "==> " << arithmetica::square_root(tokens[1], accuracy)
-                << "\n";
+      std::string ans = arithmetica::square_root(tokens[1], accuracy);
+      if (to_file) {
+        output_file << ans << "\n";
+      }
+      std::cout << "==> " << ans << "\n";
     }
     if (input == "numericeval") {
       numeric_eval = !numeric_eval;
@@ -803,6 +869,9 @@ int main(int argc, char **argv) {
       std::vector<std::string> steps;
       std::string factored = arithmetica_factor_polynomial::factor_polynomial(
           expression, steps, show_steps);
+      if (to_file) {
+        output_file << factored << "\n";
+      }
       std::cout << "\n";
       if (factored != "ERROR") {
         steps.push_back(factored);
@@ -837,9 +906,13 @@ int main(int argc, char **argv) {
       }
 
       if (numeric_eval) {
+        std::string ans = arithmetica::simplify_arithmetic_expression(expression, 0, accuracy);
+        if (to_file) {
+          output_file << ans
+                      << "\n";
+        }
         std::cout << " ==> "
-                  << arithmetica::simplify_arithmetic_expression(expression, 0,
-                                                                 accuracy)
+                  << ans
                   << "\n";
         continue;
       }
@@ -857,6 +930,16 @@ int main(int argc, char **argv) {
         // remove duplicates from to_print
         to_print.erase(std::unique(to_print.begin(), to_print.end()),
                        to_print.end());
+        if (to_file) {
+          std::string s;
+          for (auto &i : to_print) {
+            s += i + ", ";
+          }
+          if (s.length() > 2) {
+            s = s.substr(0, s.length() - 2);
+          }
+          output_file << s << "\n";
+        }
         print_expression(to_print,
                          std::vector<std::string>(to_print.size() - 1, "="), 0);
       } else {
@@ -1147,5 +1230,12 @@ int main(int argc, char **argv) {
     if (input.substr(0, 3) == "div") {
       // https://github.com/avighnac/math-new/blob/main/basic_math_operations/Division%20Algorithm/divide.hpp
     }
+  }
+
+  if (from_file) {
+    input_file.close();
+  }
+  if (to_file) {
+    output_file.close();
   }
 }
