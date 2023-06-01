@@ -370,7 +370,7 @@ int main(int argc, char **argv) {
                  "features might be unstable.\n";
   }
 
-  std::cout << "\nhttps://github.com/avighnac/arithmetica-tui\n\n";
+  std::cout << "\nhttps://github.com/arithmetica-org/arithmetica-tui\n\n";
 
   std::cout << "arithmetica supports showing working with steps (disabled "
                "by default), toggle this by typing \"showsteps\".\n\n";
@@ -381,7 +381,7 @@ int main(int argc, char **argv) {
   bool show_steps = false;
   bool degree_mode = true;
   bool enable_fractions_eval = true;
-  bool verbose_eval = true;
+  bool verbose_eval = false;
   bool numeric_eval = false;
 
   std::vector<std::string> history;
@@ -863,15 +863,29 @@ int main(int argc, char **argv) {
         std::vector<std::string> steps;
         eval_with_steps::simplify_arithmetic_expression(
             expression.c_str(), 1, accuracy, steps, verbose_eval);
+        // Remove consecutive duplicates from steps
+        // if arr[i] == arr[i+1], then remove arr[i]
+        for (size_t i = 0; i < steps.size() - 1; ++i) {
+          if (steps[i] == steps[i + 1]) {
+            steps.erase(steps.begin() + i);
+            --i;
+          }
+        }
+        bool print_original = std::find(steps.begin(), steps.end(),
+                                        "==> " + expression) == steps.end();
         replace_all(expression, "+", " + ");
         replace_all(expression, "-", " - ");
         replace_all(expression, "( - ", "(-");
         replace_all(expression, "^ - ", "^-");
         replace_all(expression, "*", " \u00d7 ");
-        std::cout << "\n"
-                  << (verbose_eval ? "Task: Simplify " : "==> ") << expression
-                  << "\n"
-                  << (verbose_eval ? "\n" : "");
+        std::cout << "\n";
+
+        if (verbose_eval) {
+          std::cout << "Task: Simplify " << expression << "\n\n";
+        } else if (print_original) {
+          std::cout << "==> " << expression << "\n";
+        }
+
         std::string s;
         for (auto &i : steps) {
           replace_all(i, "+", " + ");

@@ -279,9 +279,9 @@ static void get_chain_division_location(char *expression, long *sign1In,
   return;
 }
 
-std::string underline_text(std::string s, size_t start, size_t end) {
-  return s.substr(0, start) + "\e[4m" + s.substr(start, end - start + 1) + "\e[0m" + s.substr(end + 1, s.length());
-} 
+std::string make_text_noticable(std::string s, size_t start, size_t end) {
+  return s.substr(0, start) + "\033[38;2;105;105;105m" + s.substr(start, end - start + 1) + "\033[0m" + s.substr(end + 1, s.length());
+}
 
 char *simplify_arithmetic_expression(const char *expression_in, int outputType,
                                      size_t accuracy,
@@ -382,7 +382,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
         if (!short_steps.empty()) {
           short_steps.pop_back();
         }
-        short_steps.push_back("==> " + underline_text(expr_without_plus_zero(std::string(expression)), start + 1, end - 1));
+        short_steps.push_back("==> " + make_text_noticable(expr_without_plus_zero(std::string(expression)), start + 1, end - 1));
         for (auto i = 0; i < steps_sub.size(); ++i) {
           short_steps.push_back("  " + steps_sub[i]);
         }
@@ -594,8 +594,13 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
   char operators[] = "*+-"; // This order is important!
   size_t numberOfOperators = 3;
   // Generic procedure following order of operations
+  std::string short_step_to_add = expression;
+  short_step_to_add = expr_without_plus_zero(short_step_to_add);
   for (size_t i = 0; i < numberOfOperators; i++) {
     char sign = operators[i];
+
+    short_step_to_add = expression;
+    short_step_to_add = expr_without_plus_zero(short_step_to_add);
 
     long signLocation = find_operational_sign(expression, sign);
     while (signLocation >= 0) {
@@ -608,6 +613,15 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
       bool do_step =
           !(arithmetica::Fraction(std::string(leftArgument)) == "0") &&
           !(arithmetica::Fraction(std::string(rightArgument)) == "0");
+
+      if (!short_step_to_add.empty()) {
+        if (do_step) {
+          short_steps.push_back("==> " + make_text_noticable(short_step_to_add, start, end));
+        } else {
+          short_steps.push_back("==> " + short_step_to_add);
+        }
+        short_step_to_add.clear();
+      }
 
       expr_cpp = expression;
       if (do_step) {
@@ -684,19 +698,19 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
       replace_substring_from_position(start, end, &expression, operationResult);
       remove_misplaced_and_redundant_signs(&expression);
 
-      bool simplify_fraction_step = expr_cpp != std::string(expression);
+      bool simplify_fraction_step = expr_without_plus_zero(expr_cpp) != expr_without_plus_zero(std::string(expression));
 
       expr_cpp = expression;
       if (do_step) {
         steps.push_back("The resulting expression is:\n" +
                         expr_without_plus_zero(expr_cpp) + "\n");
-        short_steps.push_back("==> " + expr_without_plus_zero(expr_cpp));
-      } else if (simplify_arithmetic_expression) {
+        short_step_to_add = expr_without_plus_zero(expr_cpp);
+      } else if (simplify_fraction_step) {
         ++step;
         steps.push_back("Step #" + std::to_string(step) + ": Simplify fractions");
         steps.push_back("The resulting expression is:\n" +
                         expr_without_plus_zero(expr_cpp) + "\n");
-        short_steps.push_back("==> " + expr_without_plus_zero(expr_cpp));
+        short_step_to_add = expr_without_plus_zero(expr_cpp);
       }
       signLocation = find_operational_sign(expression, sign);
 
@@ -706,6 +720,10 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
     }
 
     remove_misplaced_and_redundant_signs(&expression);
+  }
+
+  if (!short_step_to_add.empty()) {
+    short_steps.push_back("==> " + short_step_to_add);
   }
 
   if (steps.empty()) {
