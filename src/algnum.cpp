@@ -108,7 +108,7 @@ static bool is_letter(char ch) {
   return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z');
 }
 
-static size_t get_matching_brace(std::string str, size_t index) {
+size_t get_matching_brace(std::string str, size_t index) {
   if (str[index] != '(')
     return -1;
   int count = 0;

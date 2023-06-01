@@ -80,4 +80,5 @@ public:
   bool operator<(variable v2);
 };
 
+size_t get_matching_brace(std::string str, size_t index);
 } // namespace algnum

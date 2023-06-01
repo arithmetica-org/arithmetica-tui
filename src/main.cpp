@@ -831,7 +831,10 @@ int main(int argc, char **argv) {
         continue;
       }
       auto tokens = tokenize(input);
-      std::string &expression = tokens[1];
+      std::string expression = tokens[1];
+      for (auto i = 2; i < tokens.size(); ++i) {
+        expression += tokens[i];
+      }
 
       if (numeric_eval) {
         std::cout << " ==> "

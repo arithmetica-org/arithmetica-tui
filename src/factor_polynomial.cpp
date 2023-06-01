@@ -352,7 +352,9 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
         }
       }
       if (full_step.length() > 2) {
-        full_step = full_step.substr(1, full_step.length() - 2);
+        if (algnum::get_matching_brace(full_step, 0) == full_step.length() - 1) {
+          full_step = full_step.substr(1, full_step.length() - 2);
+        }
       }
       steps.push_back(full_step);
     }
