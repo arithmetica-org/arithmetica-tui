@@ -609,6 +609,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
           !(arithmetica::Fraction(std::string(leftArgument)) == "0") &&
           !(arithmetica::Fraction(std::string(rightArgument)) == "0");
 
+      expr_cpp = expression;
       if (do_step) {
         ++step;
         steps.push_back("Step #" + std::to_string(step) + ": Evaluate " +
@@ -682,8 +683,17 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
 
       replace_substring_from_position(start, end, &expression, operationResult);
       remove_misplaced_and_redundant_signs(&expression);
+
+      bool simplify_fraction_step = expr_cpp != std::string(expression);
+
       expr_cpp = expression;
       if (do_step) {
+        steps.push_back("The resulting expression is:\n" +
+                        expr_without_plus_zero(expr_cpp) + "\n");
+        short_steps.push_back("==> " + expr_without_plus_zero(expr_cpp));
+      } else if (simplify_arithmetic_expression) {
+        ++step;
+        steps.push_back("Step #" + std::to_string(step) + ": Simplify fractions");
         steps.push_back("The resulting expression is:\n" +
                         expr_without_plus_zero(expr_cpp) + "\n");
         short_steps.push_back("==> " + expr_without_plus_zero(expr_cpp));
