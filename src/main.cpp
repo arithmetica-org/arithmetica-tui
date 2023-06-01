@@ -337,7 +337,7 @@ int main(int argc, char **argv) {
       std::string command;
 #ifdef __linux__
       command = "curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-                "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                "https://api.github.com/repos/arithmetica-org/arithmetica-tui/"
                 "contents/install_bleeding_edge.sh | sudo bash &";
       int n = std::system(command.c_str());
 #endif
@@ -345,7 +345,7 @@ int main(int argc, char **argv) {
       int n;
       n = std::system(
           "cd %TEMP% && curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-          "https://api.github.com/repos/avighnac/arithmetica-tui/"
+          "https://api.github.com/repos/arithmetica-org/arithmetica-tui/"
           "contents/install_bleeding_edge.bat -o install_bleeding_edge.bat && "
           "install_bleeding_edge.bat && exit");
 #endif
@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
         std::string(argv[1]) == "--update") {
       int n =
           std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-                      "https://api.github.com/repos/avighnac/arithmetica-tui/"
+                      "https://api.github.com/repos/arithemtica-org/arithmetica-tui/"
                       "contents/install_stable.sh | sudo bash &");
       std::exit(0);
     }
