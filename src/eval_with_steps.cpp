@@ -331,7 +331,7 @@ static void get_chain_division_location(char *expression, long *sign1In,
   return;
 }
 
-std::string make_text_noticable(std::string s, size_t start, size_t end) {
+std::string make_text_noticeable(std::string s, size_t start, size_t end) {
   return s;
 
   return s.substr(0, start) + "\033[38;2;105;105;105m" + s.substr(start, end - start + 1) + "\033[0m" + s.substr(end + 1, s.length());
@@ -436,7 +436,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
         if (!short_steps.empty()) {
           short_steps.pop_back();
         }
-        short_steps.push_back("==> " + make_text_noticable(expr_without_plus_zero(std::string(expression)), start + 1, end - 1));
+        short_steps.push_back("==> " + make_text_noticeable(expr_without_plus_zero(std::string(expression)), start + 1, end - 1));
         for (auto i = 0; i < steps_sub.size(); ++i) {
           short_steps.push_back("  " + steps_sub[i]);
         }
@@ -670,7 +670,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
 
       if (!short_step_to_add.empty()) {
         if (do_step) {
-          short_steps.push_back("==> " + make_text_noticable(short_step_to_add, start, end));
+          short_steps.push_back("==> " + make_text_noticeable(short_step_to_add, start, end));
         } else {
           short_steps.push_back("==> " + short_step_to_add);
         }

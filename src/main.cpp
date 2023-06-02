@@ -350,10 +350,18 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
         std::vector<std::string> left_terms;
         print_eval_expression(left, outputType, padding, &left_terms, &left_signs);
 
-        if (left.length() >= 2 && left[0] == '(' && algnum::get_matching_brace(left, 0) == left.length() - 1) {
+        arithmetica::Fraction f;
+        if (!left_terms.empty()) {
+          f = left_terms[0];
+        }
+
+        if ((left.length() >= 2 && left[0] == '(' && algnum::get_matching_brace(left, 0) == left.length() - 1)
+        ||  expression[i] == '^' && (left_terms.size() > 1 || (!left_terms.empty() && (f.numerator[0] == '-' || f.denominator != "1")) )) {
           if (left_terms.size() > 1) {
             left_terms[0] = "(" + left_terms[0];
             left_terms.back() += ")";
+          } else {
+            left_terms[0] = "(" + left_terms[0] + ")";
           }
         }
 
@@ -366,10 +374,18 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
       if (right.find_first_of("+-*") != std::string::npos) {
         print_eval_expression(right, outputType, padding, &rightTerms, &rightSigns);
 
-        if (right.length() >= 2 && right[0] == '(' && algnum::get_matching_brace(right, 0) == right.length() - 1) {
+        arithmetica::Fraction f;
+        if (!rightTerms.empty()) {
+          f = rightTerms[0];
+        }
+
+        if ((right.length() >= 2 && right[0] == '(' && algnum::get_matching_brace(right, 0) == right.length() - 1)
+         || expression[i] == '^' && (rightTerms.size() > 1 || (!rightTerms.empty() && (f.numerator[0] == '-' || f.denominator != "1")) )) {
           if (rightTerms.size() > 1) {
             rightTerms[0] = "(" + rightTerms[0];
             rightTerms.back() += ")";
+          } else {
+            rightTerms[0] = "(" + rightTerms[0] + ")";
           }
         }
       }
