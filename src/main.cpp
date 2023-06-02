@@ -225,9 +225,9 @@ std::vector<std::string> get_printable_result(std::string str) {
     answer[2] = " " + answer[2];
   }
   if (bracket_denominator) {
-    answer[0] += std::string(denominator.length() - last_closing, ' ');
+    answer[0] += std::string(denominator.length() - last_closing + 1, ' ');
     answer[1] += og_denominator.substr(last_closing, og_denominator.length());
-    answer[2] += std::string(denominator.length() - last_closing, ' ');
+    answer[2] += std::string(denominator.length() - last_closing + 1, ' ');
   }
 
   return answer;

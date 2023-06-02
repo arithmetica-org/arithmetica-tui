@@ -177,6 +177,8 @@ char *get_numerical_arguments(const char *expression, bool fromLeft,
                                      long *signIndexIn, int outputType) {
   int bracket_count = 0;
 
+  char sign = expression[*signIndexIn];
+
   long signIndex = *signIndexIn;
   char *operators = (char *)calloc(10, 1);
   size_t numberOfOperators = 3;
@@ -203,7 +205,13 @@ char *get_numerical_arguments(const char *expression, bool fromLeft,
       start = back_corresponding_square_bracket + (expression[signIndex] == ']');
       length = signIndex - back_corresponding_square_bracket + 1 - 2 * (expression[signIndex] == ']');
       signIndex = back_corresponding_square_bracket;
+
+      if (sign == '+' || sign == '-') {
+        --signIndex;
+        goto eval_w_steps_left_fetch_no_brackets;
+      }
     } else {
+eval_w_steps_left_fetch_no_brackets:
       // No brackets
       while (signIndex >= 0 &&
              !equal_to_any_from(operators, expression[signIndex],
@@ -244,12 +252,18 @@ char *get_numerical_arguments(const char *expression, bool fromLeft,
       start = signIndex + (expression[signIndex] == '[');
       length = corresponding_closing_bracket - signIndex + 1 - 2 * (expression[signIndex] == '[');
       signIndex = corresponding_closing_bracket;
+
+      // if (sign == '+' || sign == '-') {
+      //   ++signIndex;
+      //   goto eval_w_steps_right_fetch_no_brackets;
+      // }
     } else {
+// eval_w_steps_right_fetch_no_brackets:      
       start = signIndex;
       while (signIndex < strlen(expression) &&
-             (!equal_to_any_from(operators, expression[signIndex],
-                                numberOfOperators) || bracket_count != 0) &&
-             !(expression[signIndex] == '-' && encounteredNumber)) {
+             (((!equal_to_any_from(operators, expression[signIndex],
+                                numberOfOperators)) &&
+             !(expression[signIndex] == '-' && encounteredNumber)) || bracket_count != 0 ) ) {
         if (signIndex >= 0) {
           if (expression[signIndex] == ')') {
             bracket_count--;
