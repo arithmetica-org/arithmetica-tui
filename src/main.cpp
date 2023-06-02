@@ -317,9 +317,11 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
 
     if (expression[i] == '*' || expression[i] == '+' ||
         expression[i] == '-' || expression[i] == '^') {
-      long operational_sign = eval_with_steps::find_operational_sign(expression.c_str() + i - (i == 0 ? 0 : 1), expression[i]);
-      if (operational_sign != 1) {
-        continue;
+      if (expression[i] != '^') {
+        long operational_sign = eval_with_steps::find_operational_sign(expression.c_str() + i - (i == 0 ? 0 : 1), expression[i]);
+        if (operational_sign != 1) {
+          continue;
+        }
       }
 
       long start = i, end = i;
