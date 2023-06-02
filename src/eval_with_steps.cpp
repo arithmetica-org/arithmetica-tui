@@ -84,7 +84,7 @@ static void remove_misplaced_and_redundant_signs(char **expression_in) {
   return;
 }
 
-static size_t get_corresponding_closing_bracket(const char *str, size_t index) {
+size_t get_corresponding_closing_bracket(const char *str, size_t index) {
   char openBracket = '(', closeBracket = ')';
   if (str[index] == '[') {
     openBracket = '[';
@@ -129,7 +129,7 @@ static void replace_substring_from_position(size_t startPosition,
   return;
 }
 
-static long find_operational_sign(const char *expression, char sign) {
+long find_operational_sign(const char *expression, char sign) {
   bool numberFound = false;
   bool noExponent = sign != '^';
   size_t find = noExponent ? 0 : strlen(expression) - 1;
@@ -144,15 +144,22 @@ static long find_operational_sign(const char *expression, char sign) {
   return -1;
 }
 
-static size_t get_back_corresponding_square_bracket(const char *str,
+static size_t get_back_corresponding_bracket(const char *str,
                                                     size_t index) {
-  if (str[index] != ']')
+  char openBracket = '(', closeBracket = ')';
+   if (str[index] == ']') {
+    openBracket = '[';
+    closeBracket = ']';
+  } else if (str[index] == '}') {
+    openBracket = '{';
+    closeBracket = '}';
+  } else if (str[index] != ')')
     return -1;
   int count = 0;
   for (size_t i = index; i + 1 > 0; i--) {
-    if (str[i] == '[')
+    if (str[i] == openBracket)
       count--;
-    if (str[i] == ']')
+    if (str[i] == closeBracket)
       count++;
     if (!count)
       return i;
@@ -167,8 +174,10 @@ static bool equal_to_any_from(const char *options, char n, size_t size) {
   return false;
 }
 
-static char *get_numerical_arguments(const char *expression, bool fromLeft,
+char *get_numerical_arguments(const char *expression, bool fromLeft,
                                      long *signIndexIn, int outputType) {
+  int bracket_count = 0;
+
   long signIndex = *signIndexIn;
   char *operators = (char *)calloc(10, 1);
   size_t numberOfOperators = 3;
@@ -189,11 +198,11 @@ static char *get_numerical_arguments(const char *expression, bool fromLeft,
     signIndex--;
 
     // Check for brackets
-    if (signIndex >= 0 && expression[signIndex] == ']') {
+    if (signIndex >= 0 && (expression[signIndex] == ']') || (expression[signIndex] == '}') || (expression[signIndex] == ')')) {
       size_t back_corresponding_square_bracket =
-          get_back_corresponding_square_bracket(expression, signIndex);
-      start = back_corresponding_square_bracket + 1;
-      length = signIndex - back_corresponding_square_bracket - 1;
+          get_back_corresponding_bracket(expression, signIndex);
+      start = back_corresponding_square_bracket + (expression[signIndex] == ']');
+      length = signIndex - back_corresponding_square_bracket + 1 - 2 * (expression[signIndex] == ']');
       signIndex = back_corresponding_square_bracket;
     } else {
       // No brackets
@@ -201,6 +210,21 @@ static char *get_numerical_arguments(const char *expression, bool fromLeft,
              !equal_to_any_from(operators, expression[signIndex],
                                 numberOfOperators) &&
              !encounteredMinusSign) {
+        if (signIndex >= 0) {
+          if (expression[signIndex] == ')') {
+            bracket_count--;
+          }
+          if (expression[signIndex] == '(') {
+            bracket_count++;
+          }
+        }
+
+        if (bracket_count != 0) {
+          length++;
+          signIndex--;
+          continue;
+        }
+        
         if (expression[signIndex] == '-')
           encounteredMinusSign = true;
         length++;
@@ -215,18 +239,33 @@ static char *get_numerical_arguments(const char *expression, bool fromLeft,
       numberOfOperators++;
     }
     signIndex++;
-    if (signIndex < strlen(expression) && expression[signIndex] == '[') {
+    if (signIndex < strlen(expression) && (expression[signIndex] == '[') || (expression[signIndex] == '{') || (expression[signIndex] == '(')) {
       size_t corresponding_closing_bracket =
           get_corresponding_closing_bracket(expression, signIndex);
-      start = signIndex + 1;
-      length = corresponding_closing_bracket - signIndex - 1;
+      start = signIndex + (expression[signIndex] == '[');
+      length = corresponding_closing_bracket - signIndex + 1 - 2 * (expression[signIndex] == '[');
       signIndex = corresponding_closing_bracket;
     } else {
       start = signIndex;
       while (signIndex < strlen(expression) &&
-             !equal_to_any_from(operators, expression[signIndex],
-                                numberOfOperators) &&
+             (!equal_to_any_from(operators, expression[signIndex],
+                                numberOfOperators) || bracket_count != 0) &&
              !(expression[signIndex] == '-' && encounteredNumber)) {
+        if (signIndex >= 0) {
+          if (expression[signIndex] == ')') {
+            bracket_count--;
+          }
+          if (expression[signIndex] == '(') {
+            bracket_count++;
+          }
+        }
+
+        if (bracket_count != 0) {
+          length++;
+          signIndex++;
+          continue;
+        }
+
         if (!encounteredNumber)
           encounteredNumber = isdigit(expression[signIndex]);
         length++;
@@ -280,6 +319,8 @@ static void get_chain_division_location(char *expression, long *sign1In,
 }
 
 std::string make_text_noticable(std::string s, size_t start, size_t end) {
+  return s;
+
   return s.substr(0, start) + "\033[38;2;105;105;105m" + s.substr(start, end - start + 1) + "\033[0m" + s.substr(end + 1, s.length());
 }
 
