@@ -144,8 +144,7 @@ long find_operational_sign(const char *expression, char sign) {
   return -1;
 }
 
-static size_t get_back_corresponding_bracket(const char *str,
-                                                    size_t index) {
+size_t get_back_corresponding_bracket(const char *str, size_t index) {
   char openBracket = '(', closeBracket = ')';
    if (str[index] == ']') {
     openBracket = '[';

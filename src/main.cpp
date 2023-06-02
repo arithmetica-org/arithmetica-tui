@@ -151,6 +151,7 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
 
 size_t get_corresponding_closing_bracket(const char *str, size_t index);
 long find_operational_sign(const char *expression, char sign);
+size_t get_back_corresponding_bracket(const char *str, size_t index);
 };
 
 std::string remove_extra_front_back_brackets(std::string str) {
@@ -187,8 +188,9 @@ std::vector<std::string> get_printable_result(std::string str) {
   bool bracket_numerator = numerator.length() > 1 && numerator[0] == '(' && algnum::get_matching_brace(numerator, 0) == -1;
 
   size_t last_closing = denominator.rfind(')');
+  size_t closing_bracket = eval_with_steps::get_back_corresponding_bracket(denominator.c_str(), last_closing);
 
-  bool bracket_denominator =  last_closing != std::string::npos && denominator.length() > 1 && (last_closing == denominator.length() - 1 || (last_closing + 1 < denominator.length() && denominator[last_closing + 1] == '^')) && eval_with_steps::get_corresponding_closing_bracket(denominator.c_str(), last_closing) == -1;
+  bool bracket_denominator =  last_closing != std::string::npos && denominator.length() > 1 && (last_closing == denominator.length() - 1 || (last_closing + 1 < denominator.length() && denominator[last_closing + 1] == '^')) && closing_bracket == -1;
   
   numerator = numerator.substr(bracket_numerator, numerator.length());
   std::string og_denominator = denominator;
