@@ -163,19 +163,37 @@ std::string remove_extra_front_back_brackets(std::string str) {
 
 std::vector<std::string> get_printable_result(std::string str) {
   std::string whole, numerator, denominator;
-  if (str.find('/') != std::string::npos) {
+
+  bool include_brackets = remove_extra_front_back_brackets(str) != str;
+  str = remove_extra_front_back_brackets(str);
+
+  // Find the first '/' that isn't in brackets
+  int bracket_count = 0;
+  int div_loc = -1;
+  for (size_t i = 0; i < str.length(); i++) {
+    if (str[i] == '(' && eval_with_steps::get_corresponding_closing_bracket(str.c_str(), i) != -1) {
+      bracket_count++;
+    } else if (str[i] == ')' && eval_with_steps::get_back_corresponding_bracket(str.c_str(), i) != -1) {
+      bracket_count--;
+    } else if (str[i] == '/' && bracket_count == 0) {
+      div_loc = i;
+      break;
+    }
+  }
+
+  if (div_loc != -1) {
     if (str.find(' ') == std::string::npos) {
-      numerator = str.substr(0, str.find('/'));
-      denominator = str.substr(str.find('/') + 1, str.length());
+      numerator = str.substr(0, div_loc);
+      denominator = str.substr(div_loc + 1, str.length());
     } else {
       whole = str.substr(0, str.find(' '));
       numerator =
-          str.substr(str.find(' ') + 3, str.find('/') - str.find(' ') - 3);
-      denominator = str.substr(str.find('/') + 1, str.length());
+          str.substr(str.find(' ') + 3, div_loc - str.find(' ') - 3);
+      denominator = str.substr(div_loc + 1, str.length());
     }
   } else {
-    return {std::string(str.length(), ' '), str,
-            std::string(str.length(), ' ')};
+    return {std::string(str.length() + include_brackets * 2, ' '), (include_brackets ? "(" + str + ")" : str),
+            std::string(str.length() + include_brackets * 2, ' ')};
   }
 
   //   1
@@ -185,16 +203,16 @@ std::vector<std::string> get_printable_result(std::string str) {
   numerator = remove_extra_front_back_brackets(numerator);
   denominator = remove_extra_front_back_brackets(denominator);
 
-  bool bracket_numerator = numerator.length() > 1 && numerator[0] == '(' && algnum::get_matching_brace(numerator, 0) == -1;
+  bool bracket_numerator = include_brackets || (numerator.length() > 1 && numerator[0] == '(' && algnum::get_matching_brace(numerator, 0) == -1);
 
   size_t last_closing = denominator.rfind(')');
-  size_t closing_bracket = eval_with_steps::get_back_corresponding_bracket(denominator.c_str(), last_closing);
+  size_t closing_bracket = (last_closing == std::string::npos ? last_closing : eval_with_steps::get_back_corresponding_bracket(denominator.c_str(), last_closing));
 
-  bool bracket_denominator =  last_closing != std::string::npos && denominator.length() > 1 && (last_closing == denominator.length() - 1 || (last_closing + 1 < denominator.length() && denominator[last_closing + 1] == '^')) && closing_bracket == -1;
+  bool bracket_denominator =  include_brackets || (last_closing != std::string::npos && denominator.length() > 1 && (last_closing == denominator.length() - 1 || (last_closing + 1 < denominator.length() && denominator[last_closing + 1] == '^')) && closing_bracket == -1);
   
-  numerator = numerator.substr(bracket_numerator, numerator.length());
+  numerator = numerator.substr(bracket_numerator && !include_brackets, numerator.length());
   std::string og_denominator = denominator;
-  denominator = denominator.substr(0, denominator.length() - (bracket_denominator ? denominator.length() - last_closing : 0));
+  denominator = denominator.substr(0, denominator.length() - (include_brackets ? 0 : (bracket_denominator ? denominator.length() - last_closing : 0)));
 
   std::string spaces = std::string(whole.length() + 1, ' ');
   if (whole.empty())
@@ -225,9 +243,15 @@ std::vector<std::string> get_printable_result(std::string str) {
     answer[2] = " " + answer[2];
   }
   if (bracket_denominator) {
-    answer[0] += std::string(denominator.length() - last_closing + 1, ' ');
-    answer[1] += og_denominator.substr(last_closing, og_denominator.length());
-    answer[2] += std::string(denominator.length() - last_closing + 1, ' ');
+    if (include_brackets) {
+      answer[0] += " ";
+      answer[1] += ")";
+      answer[2] += " ";
+    } else {
+      answer[0] += std::string(denominator.length() - last_closing + 1, ' ');
+      answer[1] += og_denominator.substr(last_closing, og_denominator.length());
+      answer[2] += std::string(denominator.length() - last_closing + 1, ' ');
+    }
   }
 
   return answer;
@@ -350,13 +374,24 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
         std::vector<std::string> left_terms;
         print_eval_expression(left, outputType, padding, &left_terms, &left_signs);
 
-        arithmetica::Fraction f;
-        if (!left_terms.empty()) {
-          f = left_terms[0];
+        bool signs_in_left = left.find_first_of("+-*") != std::string::npos;
+
+        bool frac_cond = false;
+        size_t index = (left_terms.empty() ? std::string::npos : left_terms[0].find_first_of("+-*"));
+        if (!left_terms.empty() && (index == std::string::npos || (index == 0 && left_terms[0][0] == '-'))) {
+          arithmetica::Fraction f;
+          std::string s = left_terms[0];
+          replace_all(s, "(", "");
+          replace_all(s, ")", "");
+          if (!left_terms.empty()) {
+            f = s;
+          }
+          frac_cond = (f.numerator[0] == '-' || f.denominator != "1");
         }
 
         if ((left.length() >= 2 && left[0] == '(' && algnum::get_matching_brace(left, 0) == left.length() - 1)
-        ||  expression[i] == '^' && (left_terms.size() > 1 || (!left_terms.empty() && (f.numerator[0] == '-' || f.denominator != "1")) )) {
+        ||  (expression[i] == '^' && (left_terms.size() > 1 || (!left_terms.empty() && frac_cond) ))
+        ||  (expression[i] == '^' && signs_in_left)) {
           if (left_terms.size() > 1) {
             left_terms[0] = "(" + left_terms[0];
             left_terms.back() += ")";
