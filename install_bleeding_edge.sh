@@ -49,7 +49,7 @@ mkdir arithmetica-tui-install
 cd arithmetica-tui-install
 # Download the latest prerelease
 
-TAG=$(jq -r 'map(select(.prerelease)) | first | .tag_name' <<< $(curl --silent https://api.github.com/repos/avighnac/arithmetica-tui/releases))
+TAG=$(jq -r 'map(select(.prerelease)) | first | .tag_name' <<< $(curl --silent https://api.github.com/repos/arithmetica-org/arithmetica-tui/releases))
 echo "Downloading the latest prerelease: $TAG"
 $DOWNLOAD_CMD https://github.com/avighnac/arithmetica-tui/releases/download/$TAG/arithmetica.out
 
