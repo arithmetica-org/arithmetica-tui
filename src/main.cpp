@@ -595,7 +595,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
-std::string version = "0.3.0";
+std::string version = "0.4.0";
 
 std::string autorelease = "0";
 
