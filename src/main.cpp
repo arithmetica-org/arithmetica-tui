@@ -1,11 +1,12 @@
 #include "algnum.hpp"
 #include <algorithm>
 #include <arithmetica.hpp>
-#include <fstream>
 #include <basic_math_operations.hpp>
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
 #include <vector>
+
 
 #ifdef __linux__
 #include <sys/ioctl.h>
@@ -42,43 +43,43 @@ bool compare_text_without_ansi(std::string a, std::string b) {
   b += " "; // Add a space to the end of each string in case they end with an
             // ANSI escape sequence
 
-    std::string::size_type pos_a = 0;
-    std::string::size_type pos_b = 0;
-    while (pos_a < a.length() && pos_b < b.length()) {
-        if (a[pos_a] == '\033') {
-            // Skip ANSI escape sequence in string a
-            while (pos_a < a.length() && a[pos_a] != 'm') {
-                pos_a++;
-            }
-            // Move past 'm' character
-            pos_a++;
-        } else if (b[pos_b] == '\033') {
-            // Skip ANSI escape sequence in string b
-            while (pos_b < b.length() && b[pos_b] != 'm') {
-                pos_b++;
-            }
-            // Move past 'm' character
-            pos_b++;
-        }
-        // Compare characters
-        if (a[pos_a] != b[pos_b]) {
-            return false;
-        }
+  std::string::size_type pos_a = 0;
+  std::string::size_type pos_b = 0;
+  while (pos_a < a.length() && pos_b < b.length()) {
+    if (a[pos_a] == '\033') {
+      // Skip ANSI escape sequence in string a
+      while (pos_a < a.length() && a[pos_a] != 'm') {
         pos_a++;
+      }
+      // Move past 'm' character
+      pos_a++;
+    } else if (b[pos_b] == '\033') {
+      // Skip ANSI escape sequence in string b
+      while (pos_b < b.length() && b[pos_b] != 'm') {
         pos_b++;
+      }
+      // Move past 'm' character
+      pos_b++;
     }
-    return pos_a >= a.length() && pos_b >= b.length();
+    // Compare characters
+    if (a[pos_a] != b[pos_b]) {
+      return false;
+    }
+    pos_a++;
+    pos_b++;
+  }
+  return pos_a >= a.length() && pos_b >= b.length();
 }
 
-int compare_printed_text(const std::string& a, const std::string& b) {
-    bool same_text = compare_text_without_ansi(a, b);
-    if (same_text && a.length() > b.length()) {
-        return 1;
-    } else if (same_text && b.length() >= a.length()) {
-        return 2;
-    } else {
-        return -1;
-    }
+int compare_printed_text(const std::string &a, const std::string &b) {
+  bool same_text = compare_text_without_ansi(a, b);
+  if (same_text && a.length() > b.length()) {
+    return 1;
+  } else if (same_text && b.length() >= a.length()) {
+    return 2;
+  } else {
+    return -1;
+  }
 }
 
 std::string round_decimal(std::string decimal, int n) {
@@ -142,7 +143,7 @@ std::string center(std::string str, size_t n) {
 
 namespace eval_with_steps {
 char *get_numerical_arguments(const char *expression, bool fromLeft,
-                                     long *signIndexIn, int outputType);
+                              long *signIndexIn, int outputType);
 
 char *simplify_arithmetic_expression(const char *expression_in, int outputType,
                                      size_t accuracy,
@@ -152,12 +153,13 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
 size_t get_corresponding_closing_bracket(const char *str, size_t index);
 long find_operational_sign(const char *expression, char sign);
 size_t get_back_corresponding_bracket(const char *str, size_t index);
-};
+}; // namespace eval_with_steps
 
 std::string remove_extra_front_back_brackets(std::string str) {
-  while (str.length() >= 2 && algnum::get_matching_brace(str.c_str(), 0) == str.length() - 1) {
+  while (str.length() >= 2 &&
+         algnum::get_matching_brace(str.c_str(), 0) == str.length() - 1) {
     str = str.substr(1, str.length() - 2);
-  } 
+  }
   return str;
 }
 
@@ -171,9 +173,11 @@ std::vector<std::string> get_printable_result(std::string str) {
   int bracket_count = 0;
   int div_loc = -1;
   for (size_t i = 0; i < str.length(); i++) {
-    if (str[i] == '(' && eval_with_steps::get_corresponding_closing_bracket(str.c_str(), i) != -1) {
+    if (str[i] == '(' && eval_with_steps::get_corresponding_closing_bracket(
+                             str.c_str(), i) != -1) {
       bracket_count++;
-    } else if (str[i] == ')' && eval_with_steps::get_back_corresponding_bracket(str.c_str(), i) != -1) {
+    } else if (str[i] == ')' && eval_with_steps::get_back_corresponding_bracket(
+                                    str.c_str(), i) != -1) {
       bracket_count--;
     } else if (str[i] == '/' && bracket_count == 0) {
       div_loc = i;
@@ -187,12 +191,12 @@ std::vector<std::string> get_printable_result(std::string str) {
       denominator = str.substr(div_loc + 1, str.length());
     } else {
       whole = str.substr(0, str.find(' '));
-      numerator =
-          str.substr(str.find(' ') + 3, div_loc - str.find(' ') - 3);
+      numerator = str.substr(str.find(' ') + 3, div_loc - str.find(' ') - 3);
       denominator = str.substr(div_loc + 1, str.length());
     }
   } else {
-    return {std::string(str.length() + include_brackets * 2, ' '), (include_brackets ? "(" + str + ")" : str),
+    return {std::string(str.length() + include_brackets * 2, ' '),
+            (include_brackets ? "(" + str + ")" : str),
             std::string(str.length() + include_brackets * 2, ' ')};
   }
 
@@ -203,16 +207,34 @@ std::vector<std::string> get_printable_result(std::string str) {
   numerator = remove_extra_front_back_brackets(numerator);
   denominator = remove_extra_front_back_brackets(denominator);
 
-  bool bracket_numerator = include_brackets || (numerator.length() > 1 && numerator[0] == '(' && algnum::get_matching_brace(numerator, 0) == -1);
+  bool bracket_numerator =
+      include_brackets || (numerator.length() > 1 && numerator[0] == '(' &&
+                           algnum::get_matching_brace(numerator, 0) == -1);
 
   size_t last_closing = denominator.rfind(')');
-  size_t closing_bracket = (last_closing == std::string::npos ? last_closing : eval_with_steps::get_back_corresponding_bracket(denominator.c_str(), last_closing));
+  size_t closing_bracket =
+      (last_closing == std::string::npos
+           ? last_closing
+           : eval_with_steps::get_back_corresponding_bracket(
+                 denominator.c_str(), last_closing));
 
-  bool bracket_denominator =  include_brackets || (last_closing != std::string::npos && denominator.length() > 1 && (last_closing == denominator.length() - 1 || (last_closing + 1 < denominator.length() && denominator[last_closing + 1] == '^')) && closing_bracket == -1);
-  
-  numerator = numerator.substr(bracket_numerator && !include_brackets, numerator.length());
+  bool bracket_denominator =
+      include_brackets ||
+      (last_closing != std::string::npos && denominator.length() > 1 &&
+       (last_closing == denominator.length() - 1 ||
+        (last_closing + 1 < denominator.length() &&
+         denominator[last_closing + 1] == '^')) &&
+       closing_bracket == -1);
+
+  numerator = numerator.substr(bracket_numerator && !include_brackets,
+                               numerator.length());
   std::string og_denominator = denominator;
-  denominator = denominator.substr(0, denominator.length() - (include_brackets ? 0 : (bracket_denominator ? denominator.length() - last_closing : 0)));
+  denominator = denominator.substr(
+      0, denominator.length() -
+             (include_brackets
+                  ? 0
+                  : (bracket_denominator ? denominator.length() - last_closing
+                                         : 0)));
 
   std::string spaces = std::string(whole.length() + 1, ' ');
   if (whole.empty())
@@ -263,7 +285,10 @@ void print_result(std::string str) {
 }
 
 void print_expression(std::vector<std::string> terms,
-                      std::vector<std::string> signs, int padding, std::ofstream *file = NULL, std::vector<std::string> *out = NULL, size_t padding_exclude = 0) {
+                      std::vector<std::string> signs, int padding,
+                      std::ofstream *file = NULL,
+                      std::vector<std::string> *out = NULL,
+                      size_t padding_exclude = 0) {
   signs.push_back("");
   std::vector<std::string> expression = {"", "", ""};
   for (size_t i = 0; i < terms.size(); i++) {
@@ -273,7 +298,8 @@ void print_expression(std::vector<std::string> terms,
     }
 
     auto v = get_printable_result(terms[i]);
-    expression[0] += v[0] + std::string((signs[i] == "^" ? 0 : 2) + sign_len, ' ');
+    expression[0] +=
+        v[0] + std::string((signs[i] == "^" ? 0 : 2) + sign_len, ' ');
     expression[1] += v[1];
     if (i < terms.size() - 1) {
       if (signs[i] != "^") {
@@ -282,7 +308,8 @@ void print_expression(std::vector<std::string> terms,
         expression[1] += signs[i];
       }
     }
-    expression[2] += v[2] + std::string((signs[i] == "^" ? 0 : 2) + sign_len, ' ');
+    expression[2] +=
+        v[2] + std::string((signs[i] == "^" ? 0 : 2) + sign_len, ' ');
   }
   for (auto i = 0; i < expression.size(); ++i) {
     if (i == padding_exclude)
@@ -292,8 +319,8 @@ void print_expression(std::vector<std::string> terms,
   }
   if (file != NULL) {
     *file << expression[0] << "\n"
-         << expression[1] << "\n"
-         << expression[2] << "\n";
+          << expression[1] << "\n"
+          << expression[2] << "\n";
     return;
   }
   if (out != NULL) {
@@ -307,8 +334,10 @@ void print_expression(std::vector<std::string> terms,
             << expression[2] << "\n";
 }
 
-void print_eval_expression(std::string expression, int outputType, int padding, std::vector<std::string> *outTerms = NULL, std::vector<std::string> *outSigns = NULL) {
-  expression = remove_extra_front_back_brackets(expression);	
+void print_eval_expression(std::string expression, int outputType, int padding,
+                           std::vector<std::string> *outTerms = NULL,
+                           std::vector<std::string> *outSigns = NULL) {
+  expression = remove_extra_front_back_brackets(expression);
 
   size_t index = expression.rfind("==> ");
   std::string beginning_to_print;
@@ -341,10 +370,11 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
       continue;
     }
 
-    if (expression[i] == '*' || expression[i] == '+' ||
-        expression[i] == '-' || expression[i] == '^') {
+    if (expression[i] == '*' || expression[i] == '+' || expression[i] == '-' ||
+        expression[i] == '^') {
       if (expression[i] == '-') {
-        long operational_sign = eval_with_steps::find_operational_sign(expression.c_str() + i - (i == 0 ? 0 : 1), expression[i]);
+        long operational_sign = eval_with_steps::find_operational_sign(
+            expression.c_str() + i - (i == 0 ? 0 : 1), expression[i]);
         if (operational_sign != 1) {
           continue;
         }
@@ -356,14 +386,14 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
       }
 
       long start = i, end = i;
-      char *leftArgument =
-          eval_with_steps::get_numerical_arguments(expression.c_str(), true, &start, outputType);
-      char *rightArgument =
-          eval_with_steps::get_numerical_arguments(expression.c_str(), false, &end, outputType);
+      char *leftArgument = eval_with_steps::get_numerical_arguments(
+          expression.c_str(), true, &start, outputType);
+      char *rightArgument = eval_with_steps::get_numerical_arguments(
+          expression.c_str(), false, &end, outputType);
 
       left = leftArgument, right = rightArgument;
-      free (leftArgument);
-      free (rightArgument);
+      free(leftArgument);
+      free(rightArgument);
 
       if (!signs.empty() && signs.back() == "-") {
         left = left.substr(1, left.length());
@@ -372,13 +402,17 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
       if (left.find_first_of("+-*") != std::string::npos) {
         std::vector<std::string> left_signs;
         std::vector<std::string> left_terms;
-        print_eval_expression(left, outputType, padding, &left_terms, &left_signs);
+        print_eval_expression(left, outputType, padding, &left_terms,
+                              &left_signs);
 
         bool signs_in_left = left.find_first_of("+-*") != std::string::npos;
 
         bool frac_cond = false;
-        size_t index = (left_terms.empty() ? std::string::npos : left_terms[0].find_first_of("+-*"));
-        if (!left_terms.empty() && (index == std::string::npos || (index == 0 && left_terms[0][0] == '-'))) {
+        size_t index =
+            (left_terms.empty() ? std::string::npos
+                                : left_terms[0].find_first_of("+-*"));
+        if (!left_terms.empty() && (index == std::string::npos ||
+                                    (index == 0 && left_terms[0][0] == '-'))) {
           arithmetica::Fraction f;
           std::string s = left_terms[0];
           replace_all(s, "(", "");
@@ -389,9 +423,11 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
           frac_cond = (f.numerator[0] == '-' || f.denominator != "1");
         }
 
-        if ((left.length() >= 2 && left[0] == '(' && algnum::get_matching_brace(left, 0) == left.length() - 1)
-        ||  (expression[i] == '^' && (left_terms.size() > 1 || (!left_terms.empty() && frac_cond) ))
-        ||  (expression[i] == '^' && signs_in_left)) {
+        if ((left.length() >= 2 && left[0] == '(' &&
+             algnum::get_matching_brace(left, 0) == left.length() - 1) ||
+            (expression[i] == '^' &&
+             (left_terms.size() > 1 || (!left_terms.empty() && frac_cond))) ||
+            (expression[i] == '^' && signs_in_left)) {
           if (left_terms.size() > 1) {
             left_terms[0] = "(" + left_terms[0];
             left_terms.back() += ")";
@@ -407,15 +443,20 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
       }
 
       if (right.find_first_of("+-*") != std::string::npos) {
-        print_eval_expression(right, outputType, padding, &rightTerms, &rightSigns);
+        print_eval_expression(right, outputType, padding, &rightTerms,
+                              &rightSigns);
 
         arithmetica::Fraction f;
         if (!rightTerms.empty()) {
           f = rightTerms[0];
         }
 
-        if ((right.length() >= 2 && right[0] == '(' && algnum::get_matching_brace(right, 0) == right.length() - 1)
-         || expression[i] == '^' && (rightTerms.size() > 1 || (!rightTerms.empty() && (f.numerator[0] == '-' || f.denominator != "1")) )) {
+        if ((right.length() >= 2 && right[0] == '(' &&
+             algnum::get_matching_brace(right, 0) == right.length() - 1) ||
+            expression[i] == '^' &&
+                (rightTerms.size() > 1 ||
+                 (!rightTerms.empty() &&
+                  (f.numerator[0] == '-' || f.denominator != "1")))) {
           if (rightTerms.size() > 1) {
             rightTerms[0] = "(" + rightTerms[0];
             rightTerms.back() += ")";
@@ -461,11 +502,11 @@ void print_eval_expression(std::string expression, int outputType, int padding, 
 
   for (auto &i : out) {
     // Repalce all '*''s with '\u00d7' (multiplication sign)
-    replace_all (i, "*", "\u00d7");
+    replace_all(i, "*", "\u00d7");
   }
 
   for (size_t i = 0; i < out.size(); ++i) {
-    if (out[i].empty() || out[i].find_first_not_of (' ') == std::string::npos) {
+    if (out[i].empty() || out[i].find_first_not_of(' ') == std::string::npos) {
       continue;
     }
     if (i == 1) {
@@ -606,12 +647,6 @@ int main(int argc, char **argv) {
   std::ifstream input_file;
   std::ofstream output_file;
 
-  //   std::cout << "Welcome to arithmetica, the command line wrapper for the "
-  //                "arithmetica library! ";
-  //   std::cout << "Whether it's basic arithmetic, fraction addition, or "
-  //                "evaluating trigonometric functions to hundreds of decimal "
-  //                "places, arithmetica has you covered!\n\n";
-
   std::string printable_version = "arithmetica ";
 
   if (!autorelease.empty() && autorelease != "0") {
@@ -658,10 +693,10 @@ int main(int argc, char **argv) {
     }
     if (std::string(argv[1]) == "--update-stable" ||
         std::string(argv[1]) == "--update") {
-      int n =
-          std::system("curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-                      "https://api.github.com/repos/arithemtica-org/arithmetica-tui/"
-                      "contents/install_stable.sh | sudo bash &");
+      int n = std::system(
+          "curl -s -H \"Accept: application/vnd.github.v3.raw\" "
+          "https://api.github.com/repos/arithemtica-org/arithmetica-tui/"
+          "contents/install_stable.sh | sudo bash &");
       std::exit(0);
     }
 
@@ -677,8 +712,8 @@ int main(int argc, char **argv) {
         output_file.open(filename);
 
         if (!output_file.good()) {
-          std::cerr << "Error: There was a problem opening the file \"" << filename
-                    << "\" for writing.\n";
+          std::cerr << "Error: There was a problem opening the file \""
+                    << filename << "\" for writing.\n";
           std::exit(1);
         }
       }
@@ -838,7 +873,7 @@ int main(int argc, char **argv) {
     std::cout << "\n";
 #endif
 
-after_input:
+  after_input:
 
     // remove front and back whitespace
     input.erase(0, input.find_first_not_of(' '));
@@ -1206,14 +1241,12 @@ after_input:
       }
 
       if (numeric_eval) {
-        std::string ans = arithmetica::simplify_arithmetic_expression(expression, 0, accuracy);
+        std::string ans = arithmetica::simplify_arithmetic_expression(
+            expression, 0, accuracy);
         if (to_file) {
-          output_file << ans
-                      << "\n";
+          output_file << ans << "\n";
         }
-        std::cout << " ==> "
-                  << ans
-                  << "\n";
+        std::cout << " ==> " << ans << "\n";
         continue;
       }
 
@@ -1244,8 +1277,10 @@ after_input:
                          std::vector<std::string>(to_print.size() - 1, "="), 0);
       } else {
         std::vector<std::string> steps;
-        eval_with_steps::simplify_arithmetic_expression(
+        char *answer = eval_with_steps::simplify_arithmetic_expression(
             expression.c_str(), 1, accuracy, steps, verbose_eval);
+        std::string answer_cpp = answer;
+        free(answer);
         // Remove consecutive duplicates from steps
         // if arr[i] == arr[i+1], then remove arr[i]
         for (size_t i = 0; i < steps.size() - 1; ++i) {
@@ -1292,6 +1327,26 @@ after_input:
           print_eval_expression(i, 1, 0);
         }
         // std::cout << s;
+        std::string decimal_version =
+            arithmetica::simplify_arithmetic_expression(answer_cpp, 0,
+                                                        accuracy);
+        if (decimal_version != answer_cpp) {
+          std::vector<std::string> to_print = {decimal_version, answer_cpp, arithmetica::simplify_arithmetic_expression(answer_cpp,
+                                                                   2, accuracy)};
+          to_print.erase(std::unique(to_print.begin(), to_print.end()),
+                         to_print.end());
+          std::cout << "[";
+          for (auto i = 0; i < to_print.size(); ++i) {
+            to_print[i].erase(std::remove(to_print[i].begin(),
+                                          to_print[i].end(), ' '),
+                              to_print[i].end());
+            std::cout << to_print[i];
+            if (i != to_print.size() - 1) {
+              std::cout << ", ";
+            }
+          }
+          std::cout << "]\n";
+        }
         if (s.length() > 1 && s[s.length() - 2] != '\n') {
           std::cout << "\n";
         }
@@ -1447,8 +1502,8 @@ after_input:
       if (!show_steps) {
         if (tokens[1].find('/') == std::string::npos &&
             tokens[2].find('/') == std::string::npos) {
-          std::string ans = basic_math_operations::multiply(tokens[1],
-                                                           tokens[2]);
+          std::string ans =
+              basic_math_operations::multiply(tokens[1], tokens[2]);
           std::cout << "==> " << ans << "\n";
           if (to_file) {
             output_file << ans << "\n";
