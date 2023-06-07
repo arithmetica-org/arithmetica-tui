@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <vector>
 
-
 #ifdef __linux__
 #include <sys/ioctl.h>
 #endif
@@ -695,7 +694,7 @@ int main(int argc, char **argv) {
         std::string(argv[1]) == "--update") {
       int n = std::system(
           "curl -s -H \"Accept: application/vnd.github.v3.raw\" "
-          "https://api.github.com/repos/arithemtica-org/arithmetica-tui/"
+          "https://api.github.com/repos/arithmetica-org/arithmetica-tui/"
           "contents/install_stable.sh | sudo bash &");
       std::exit(0);
     }
@@ -1331,15 +1330,17 @@ int main(int argc, char **argv) {
             arithmetica::simplify_arithmetic_expression(answer_cpp, 0,
                                                         accuracy);
         if (decimal_version != answer_cpp) {
-          std::vector<std::string> to_print = {decimal_version, answer_cpp, arithmetica::simplify_arithmetic_expression(answer_cpp,
-                                                                   2, accuracy)};
+          std::vector<std::string> to_print = {
+              decimal_version, answer_cpp,
+              arithmetica::simplify_arithmetic_expression(answer_cpp, 2,
+                                                          accuracy)};
           to_print.erase(std::unique(to_print.begin(), to_print.end()),
                          to_print.end());
           std::cout << "[";
           for (auto i = 0; i < to_print.size(); ++i) {
-            to_print[i].erase(std::remove(to_print[i].begin(),
-                                          to_print[i].end(), ' '),
-                              to_print[i].end());
+            to_print[i].erase(
+                std::remove(to_print[i].begin(), to_print[i].end(), ' '),
+                to_print[i].end());
             std::cout << to_print[i];
             if (i != to_print.size() - 1) {
               std::cout << ", ";
