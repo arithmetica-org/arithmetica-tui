@@ -61,6 +61,8 @@ std::string shorten_console_output(std::string str) {
 }
 
 std::string call_arithmetica_tui(std::string command) {
+  command += "\nexit\n";
+
   std::stringstream s;
   auto buf = std::cout.rdbuf();
   std::cout.rdbuf(s.rdbuf());
@@ -119,6 +121,8 @@ std::string call_arithmetica_tui(std::string command) {
   std::cout.rdbuf(buf);
   std::string test = s.str();
   test = shorten_console_output(test);
+
+  std::cout << test << "\n";
 
   return test;
 }
