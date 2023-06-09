@@ -10,14 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Install nasm
+    - name: Install nasm and valgrind
       run: |
         sudo apt update
         sudo apt install nasm
+        sudo apt install valgrind
     - name: Compile tests
       run: |
-        cmake --no-warn-unused-cli -DBUILD_MAIN_EXECUTABLE=OFF -DARITHMETICA_TUI_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build -G "Unix Makefiles"
-        cmake --build build --config Release --target all -j 10 --
+        cmake --no-warn-unused-cli -DBUILD_MAIN_EXECUTABLE=OFF -DARITHMETICA_TUI_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -S . -B build -G "Unix Makefiles"
+        cmake --build build --config Debug --target all -j 10 --
         chmod +x ./build/tests/arithmetica_tui_tests
     - name: Run tests
-      run: ./build/tests/arithmetica_tui_tests
+      run: valgrind --error-exitcode=1 --leak-check=full --track-origins=yes ./build/tests/arithmetica_tui_tests
