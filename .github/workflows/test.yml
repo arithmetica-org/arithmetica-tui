@@ -1,0 +1,18 @@
+name: Test arithmetica-tui
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test-arithmetica-tui:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Compile the tests
+      run: |
+        cmake -DBUILD_MAIN_EXECUTABLE=OFF -DARITHMETICA_TUI_TESTS=ON -S . -B build
+        cd build
+        make
+        ./tests/arithmetica-tui-tests

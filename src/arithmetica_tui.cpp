@@ -384,11 +384,18 @@ void print_eval_expression(std::string expression, int outputType, int padding,
         }
       }
 
+      char temp = expression[i];
+      if (expression[i] == '*') {
+        expression[i] = '+';
+      }
+
       long start = i, end = i;
       char *leftArgument = eval_with_steps::get_numerical_arguments(
           expression.c_str(), true, &start, outputType);
       char *rightArgument = eval_with_steps::get_numerical_arguments(
           expression.c_str(), false, &end, outputType);
+
+      expression[i] = temp;
 
       left = leftArgument, right = rightArgument;
       free(leftArgument);

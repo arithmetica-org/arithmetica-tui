@@ -121,8 +121,6 @@ std::string call_arithmetica_tui(std::string command) {
   std::cout.rdbuf(buf);
   std::string test = s.str();
   test = shorten_console_output(test);
-
-  std::cout << test << "\n";
-
+  
   return test;
 }
