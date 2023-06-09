@@ -16,9 +16,8 @@ jobs:
         sudo apt install nasm
     - name: Compile tests
       run: |
-        cmake -DBUILD_MAIN_EXECUTABLE=OFF -DARITHMETICA_TUI_TESTS=ON -S . -B build
-        cd build
-        make
+        cmake --no-warn-unused-cli -DBUILD_MAIN_EXECUTABLE=OFF -DARITHMETICA_TUI_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build -G "Unix Makefiles"
+        cmake --build build --config Release --target all -j 10 --
         chmod +x ./tests/arithmetica_tui_tests
     - name: Run tests
       run: ./build/tests/arithmetica_tui_tests
