@@ -61,6 +61,10 @@ std::string shorten_console_output(std::string str) {
 }
 
 std::string call_arithmetica_tui(std::string command) {
+#ifdef _WIN32
+  return "Not implemented.";
+#endif
+
   command += "\nexit\n";
 
   std::stringstream s;
