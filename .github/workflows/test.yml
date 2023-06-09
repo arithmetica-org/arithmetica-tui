@@ -18,6 +18,6 @@ jobs:
       run: |
         cmake --no-warn-unused-cli -DBUILD_MAIN_EXECUTABLE=OFF -DARITHMETICA_TUI_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build -G "Unix Makefiles"
         cmake --build build --config Release --target all -j 10 --
-        chmod +x ./tests/arithmetica_tui_tests
+        chmod +x ./build/tests/arithmetica_tui_tests
     - name: Run tests
       run: ./build/tests/arithmetica_tui_tests
