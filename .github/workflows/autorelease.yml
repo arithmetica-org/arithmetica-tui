@@ -40,6 +40,8 @@ jobs:
         name: main-cpp
     - name: Move main.cpp to src
       run: mv main.cpp src
+    - name: Clone submodules
+      run: git submodule update --init --recursive
     - name: Compile arithmetica-tui for Linux
       run: |
         curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/arithmetica-org/arithmetica/contents/install.sh | sudo bash
@@ -71,7 +73,6 @@ jobs:
     - name: Clone submodules
       run: git submodule update --init --recursive
     - name: Compile arithmetica-tui for Windows
-    # I've already modified the CMake files to compile 'arithmetica' and 'basic_math_operations' in Windows so we don't need install them.
       run: |
         cmake --no-warn-unused-cli -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S. -B build -G "MinGW Makefiles"
         cmake --build build --config Release --target all -j 10
