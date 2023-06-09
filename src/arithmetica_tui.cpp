@@ -18,7 +18,8 @@ int get_console_width() {
   int ans = 20;
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-  int new_ans = w.ws_col;
+  int new_ans = 0;
+  new_ans = w.ws_col;
   if (new_ans > 0) {
     ans = new_ans;
   }
