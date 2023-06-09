@@ -845,6 +845,7 @@ int main(int argc, char **argv) {
           std::cout << "\33[2K\r\033[A";
         }
         std::cout << "\33[2K\rarithmetica> " << input;
+        std::cout << "\rarithmetica> " << input.substr(0, input_index);
       }
     }
 #endif
