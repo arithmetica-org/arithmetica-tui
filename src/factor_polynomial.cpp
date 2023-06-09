@@ -251,9 +251,9 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
       }
     }
 
-    coefficients[ptr] = (char *)malloc(
-        sizeof(char) * expr_vec[i].constant.to_string().length());
     std::string constant_str = expr_vec[i].constant.to_string();
+    coefficients[ptr] =
+        (char *)malloc(sizeof(char) * (constant_str.length() + 1));
     strcpy(coefficients[ptr], constant_str.c_str());
     ptr++;
   }
@@ -357,7 +357,8 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
         }
       }
       if (full_step.length() > 2) {
-        if (algnum::get_matching_brace(full_step, 0) == full_step.length() - 1) {
+        if (algnum::get_matching_brace(full_step, 0) ==
+            full_step.length() - 1) {
           full_step = full_step.substr(1, full_step.length() - 2);
         }
       }
