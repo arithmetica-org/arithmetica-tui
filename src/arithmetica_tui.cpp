@@ -124,12 +124,15 @@ std::string round_decimal(std::string decimal, int n) {
 // Get a single character from the console without echo or buffering
 #ifdef __linux__
 #include <termios.h>
+#include <string.h>
 char getch() {
-  struct termios oldt, newt;
+  struct termios t, oldt;
+  memset(&t, 0, sizeof(t));
+  memset(&oldt, 0, sizeof(oldt));
   tcgetattr(STDIN_FILENO, &oldt);
-  newt = oldt;
-  newt.c_lflag &= ~(ICANON | ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  tcgetattr(STDIN_FILENO, &t);
+  t.c_lflag &= ~ECHO;
+  tcsetattr(STDIN_FILENO, TCSANOW, &t);
   char c = getchar();
   tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
   return c;
