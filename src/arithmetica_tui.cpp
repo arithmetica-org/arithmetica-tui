@@ -4,6 +4,7 @@
 #include <basic_math_operations.hpp>
 #include <fstream>
 #include <iostream>
+#include <cstring>
 #include <unistd.h>
 #include <vector>
 
@@ -17,11 +18,12 @@ int get_console_width() {
 #ifdef __linux__
   int ans = 20;
   struct winsize w;
+  memset(&w, 0, sizeof(w));
+  w.ws_col = 0;
+  w.ws_row = 0;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-  int new_ans = 0;
-  new_ans = w.ws_col;
-  if (new_ans > 0) {
-    ans = new_ans;
+  if (w.ws_col > 0) {
+    ans = w.ws_col;
   }
   return ans;
 #endif
@@ -129,7 +131,6 @@ std::string round_decimal(std::string decimal, int n) {
 
 // Get a single character from the console without echo or buffering
 #ifdef __linux__
-#include <string.h>
 #include <termios.h>
 char getch() {
   struct termios t, oldt;
