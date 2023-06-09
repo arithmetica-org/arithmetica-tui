@@ -600,7 +600,7 @@ std::string autorelease = "0";
 
 size_t accuracy = 10;
 
-int main(int argc, char **argv) {
+int arithmetica_tui(int argc, char **argv) {
   using namespace basic_math_operations;
   using namespace arithmetica;
 
@@ -1621,4 +1621,10 @@ int main(int argc, char **argv) {
   if (to_file) {
     output_file.close();
   }
+
+  return 0;
+}
+
+int main(int argc, char **argv) {
+  return arithmetica_tui(argc, argv);
 }
