@@ -15,9 +15,13 @@
 #endif
 int get_console_width() {
 #ifdef __linux__
+  int ans = 20;
   struct winsize w;
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-  return w.ws_col;
+  if (w.ws_col > 0) {
+    ans = w.ws_col;
+  }
+  return ans;
 #endif
 #ifdef _WIN32
   CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -123,8 +127,8 @@ std::string round_decimal(std::string decimal, int n) {
 
 // Get a single character from the console without echo or buffering
 #ifdef __linux__
-#include <termios.h>
 #include <string.h>
+#include <termios.h>
 char getch() {
   struct termios t, oldt;
   memset(&t, 0, sizeof(t));
