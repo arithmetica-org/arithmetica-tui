@@ -10,9 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Compile the tests
+    - name: Install nasm
+      run: sudo apt-get install nasm
+    - name: Compile tests
       run: |
         cmake -DBUILD_MAIN_EXECUTABLE=OFF -DARITHMETICA_TUI_TESTS=ON -S . -B build
         cd build
         make
-        ./tests/arithmetica-tui-tests
+    - name: Run tests
+      run: ./tests/arithmetica-tui-tests
