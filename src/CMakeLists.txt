@@ -4,6 +4,7 @@ project(arithmetica-tui)
 
 set(sources
     main.cpp
+    arithmetica_tui.cpp
     factor_polynomial.cpp
     eval_with_steps.cpp
     algnum.cpp
