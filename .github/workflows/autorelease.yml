@@ -40,6 +40,8 @@ jobs:
         name: main-cpp
     - name: Move main.cpp to src
       run: mv main.cpp src
+    - name: Install nasm
+      run: sudo apt install nasm
     - name: Clone submodules
       run: git submodule update --init --recursive
     - name: Compile arithmetica-tui for Linux
