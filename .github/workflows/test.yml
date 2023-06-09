@@ -18,4 +18,4 @@ jobs:
         cd build
         make
     - name: Run tests
-      run: ./tests/arithmetica-tui-tests
+      run: ./build/tests/arithmetica-tui-tests
