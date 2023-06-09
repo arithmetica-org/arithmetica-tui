@@ -133,13 +133,13 @@ std::string round_decimal(std::string decimal, int n) {
 #ifdef __linux__
 #include <termios.h>
 char getch() {
-  struct termios t, oldt;
-  memset(&t, 0, sizeof(t));
+  struct termios oldt, newt;
   memset(&oldt, 0, sizeof(oldt));
+  memset(&newt, 0, sizeof(newt));
   tcgetattr(STDIN_FILENO, &oldt);
-  tcgetattr(STDIN_FILENO, &t);
-  t.c_lflag &= ~ECHO;
-  tcsetattr(STDIN_FILENO, TCSANOW, &t);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
   char c = getchar();
   tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
   return c;
