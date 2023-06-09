@@ -11,11 +11,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install nasm
-      run: sudo apt-get install nasm
+      run: |
+        sudo apt update
+        sudo apt install nasm
     - name: Compile tests
       run: |
         cmake -DBUILD_MAIN_EXECUTABLE=OFF -DARITHMETICA_TUI_TESTS=ON -S . -B build
         cd build
         make
+        chmod +x ./tests/arithmetica_tui_tests
     - name: Run tests
       run: ./build/tests/arithmetica_tui_tests
