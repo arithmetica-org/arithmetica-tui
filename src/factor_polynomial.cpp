@@ -161,7 +161,7 @@ std::vector<std::string> multiply_polynomials_with_steps(
         form_printable_polynomial(partial_result, variable);
 
     if (i != 0) {
-      if (partial_str[0] != '-') {
+      if (!partial_str.empty() && partial_str[0] != '-') {
         step.push_back('+');
       }
     }
@@ -233,7 +233,6 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
           .number);
   std::vector<am_frac> frac_coefficients;
   char **coefficients = (char **)malloc(sizeof(char *) * _size);
-  float power = _size;
   size_t ptr = 0;
   for (int i = 0; i < expr_vec.size(); i++) {
     if (i != 0) {
@@ -256,6 +255,12 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
         sizeof(char) * expr_vec[i].constant.to_string().length());
     std::string constant_str = expr_vec[i].constant.to_string();
     strcpy(coefficients[ptr], constant_str.c_str());
+    ptr++;
+  }
+
+  for (int i = expr_vec.size(); i < _size; i++) {
+    coefficients[ptr] = (char *)malloc(sizeof(char) * 2);
+    strcpy(coefficients[ptr], "0");
     ptr++;
   }
 
@@ -360,6 +365,8 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
     }
     expanded = answer;
   }
+  // Remove consecutive duplicates.
+  steps.erase(std::unique(steps.begin(), steps.end()), steps.end());
   std::reverse(steps.begin(), steps.end());
 
   return answer;

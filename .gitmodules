@@ -1,6 +1,6 @@
 [submodule "submodules/arithmetica"]
 	path = submodules/arithmetica
-	url = https://github.com/avighnac/arithmetica
+	url = https://github.com/arithmetica-org/arithmetica
 [submodule "submodules/basic_math_operations"]
 	path = submodules/basic_math_operations
 	url = https://github.com/avighnac/basic_math_operations

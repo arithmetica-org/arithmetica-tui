@@ -10,10 +10,10 @@ set(sources
 )
 
 add_executable(arithmetica-tui ${sources})
-if (WIN32)
+if (WIN32 OR USE_SUBMODULE_AM_BMO)
     # We'll need to build the library and then link it.
-    add_subdirectory(../submodules/arithmetica ${CMAKE_CURRENT_BINARY_DIR}/arithmetica)
-    add_subdirectory(../submodules/basic_math_operations ${CMAKE_CURRENT_BINARY_DIR}/basic_math_operations)
+    add_subdirectory(../submodules/arithmetica ${CMAKE_CURRENT_BINARY_DIR}/libs/arithmetica)
+    add_subdirectory(../submodules/basic_math_operations ${CMAKE_CURRENT_BINARY_DIR}/libs/basic_math_operations)
 endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE arithmetica)
 target_link_libraries(${PROJECT_NAME} PRIVATE basic_math_operations)
