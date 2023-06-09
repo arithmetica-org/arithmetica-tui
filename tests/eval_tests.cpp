@@ -82,3 +82,11 @@ TEST(EvalTests, Test10) {
   result = call_arithmetica_tui("showsteps\neval 4/(2*3)*1");
   ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval 4/(2*3)*1\\n\\n     4       \\n==> --- × 1\\n    2×3      \\n  ==> 2 × 3\\n  ==> 6\\n        1      \\n==> 4 × - × 1\\n        6      \\n    2      \\n==> - × 1\\n    3      \\n    2  \\n==> -\\n    3  \\n[0.6666666666, 2/3]\\n\\narithmetica> exit\\n");
 }
+
+TEST(EvalTests, Test11) {
+  std::string result;
+  result = call_arithmetica_tui("eval 0.1+0.1");
+  ASSERT_EQ(result, "arithmetica> eval 0.1+0.1\\n      1  \\n0.2 = -\\n      5  \\narithmetica> exit\\n");
+  result = call_arithmetica_tui("showsteps\neval 0.1+0.1");
+  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval 0.1+0.1\\n\\n==> 0.1 + 0.1\\n    1  \\n==> -\\n    5  \\n[0.2, 1/5]\\n\\narithmetica> exit\\n");
+}

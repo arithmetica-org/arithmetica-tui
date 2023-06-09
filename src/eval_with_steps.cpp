@@ -49,10 +49,26 @@ static void str_replace_all(char **str_in, const char *from, const char *to) {
 }
 
 std::string expr_without_plus_zero(std::string expr) {
+  for (size_t i = 0; i < expr.length(); ++i) {
+    std::string substr = expr.substr(i, expr.length());
+    if (substr == "+0") {
+      // Remove the +0
+      expr.replace(i, 2, "");
+      i -= 2;
+      continue;
+    }
+    if (substr.substr(0, 2) == "+0" && substr.length() >= 3) {
+      if (std::string(1, substr[2]).find_first_of("+-*/^") != std::string::npos) {
+        // Remove the +0
+        expr.replace(i, 2, "");
+        i -= 2;
+      }
+    }
+  }
+
   char *expr_c = (char *)malloc(expr.length() + 1);
   strcpy(expr_c, expr.c_str());
 
-  str_replace_all(&expr_c, "+0", "");
   str_replace_all(&expr_c, "[", "(");
   str_replace_all(&expr_c, "]", ")");
 
@@ -146,7 +162,7 @@ long find_operational_sign(const char *expression, char sign) {
 
 size_t get_back_corresponding_bracket(const char *str, size_t index) {
   char openBracket = '(', closeBracket = ')';
-   if (str[index] == ']') {
+  if (str[index] == ']') {
     openBracket = '[';
     closeBracket = ']';
   } else if (str[index] == '}') {
@@ -174,7 +190,7 @@ static bool equal_to_any_from(const char *options, char n, size_t size) {
 }
 
 char *get_numerical_arguments(const char *expression, bool fromLeft,
-                                     long *signIndexIn, int outputType) {
+                              long *signIndexIn, int outputType) {
   int bracket_count = 0;
 
   char sign = expression[*signIndexIn];
@@ -199,11 +215,14 @@ char *get_numerical_arguments(const char *expression, bool fromLeft,
     signIndex--;
 
     // Check for brackets
-    if (signIndex >= 0 && (expression[signIndex] == ']') || (expression[signIndex] == '}') || (expression[signIndex] == ')')) {
+    if (signIndex >= 0 && (expression[signIndex] == ']') ||
+        (expression[signIndex] == '}') || (expression[signIndex] == ')')) {
       size_t back_corresponding_square_bracket =
           get_back_corresponding_bracket(expression, signIndex);
-      start = back_corresponding_square_bracket + (expression[signIndex] == ']');
-      length = signIndex - back_corresponding_square_bracket + 1 - 2 * (expression[signIndex] == ']');
+      start =
+          back_corresponding_square_bracket + (expression[signIndex] == ']');
+      length = signIndex - back_corresponding_square_bracket + 1 -
+               2 * (expression[signIndex] == ']');
       signIndex = back_corresponding_square_bracket;
 
       if (sign == '+' || sign == '-') {
@@ -211,7 +230,7 @@ char *get_numerical_arguments(const char *expression, bool fromLeft,
         goto eval_w_steps_left_fetch_no_brackets;
       }
     } else {
-eval_w_steps_left_fetch_no_brackets:
+    eval_w_steps_left_fetch_no_brackets:
       // No brackets
       while (signIndex >= 0 &&
              !equal_to_any_from(operators, expression[signIndex],
@@ -231,7 +250,7 @@ eval_w_steps_left_fetch_no_brackets:
           signIndex--;
           continue;
         }
-        
+
         if (expression[signIndex] == '-')
           encounteredMinusSign = true;
         length++;
@@ -246,11 +265,13 @@ eval_w_steps_left_fetch_no_brackets:
       numberOfOperators++;
     }
     signIndex++;
-    if (signIndex < strlen(expression) && (expression[signIndex] == '[') || (expression[signIndex] == '{') || (expression[signIndex] == '(')) {
+    if (signIndex < strlen(expression) && (expression[signIndex] == '[') ||
+        (expression[signIndex] == '{') || (expression[signIndex] == '(')) {
       size_t corresponding_closing_bracket =
           get_corresponding_closing_bracket(expression, signIndex);
       start = signIndex + (expression[signIndex] == '[');
-      length = corresponding_closing_bracket - signIndex + 1 - 2 * (expression[signIndex] == '[');
+      length = corresponding_closing_bracket - signIndex + 1 -
+               2 * (expression[signIndex] == '[');
       signIndex = corresponding_closing_bracket;
 
       // if (sign == '+' || sign == '-') {
@@ -258,12 +279,13 @@ eval_w_steps_left_fetch_no_brackets:
       //   goto eval_w_steps_right_fetch_no_brackets;
       // }
     } else {
-// eval_w_steps_right_fetch_no_brackets:      
+      // eval_w_steps_right_fetch_no_brackets:
       start = signIndex;
       while (signIndex < strlen(expression) &&
              (((!equal_to_any_from(operators, expression[signIndex],
-                                numberOfOperators)) &&
-             !(expression[signIndex] == '-' && encounteredNumber)) || bracket_count != 0 ) ) {
+                                   numberOfOperators)) &&
+               !(expression[signIndex] == '-' && encounteredNumber)) ||
+              bracket_count != 0)) {
         if (signIndex >= 0) {
           if (expression[signIndex] == ')') {
             bracket_count--;
@@ -334,7 +356,9 @@ static void get_chain_division_location(char *expression, long *sign1In,
 std::string make_text_noticeable(std::string s, size_t start, size_t end) {
   return s;
 
-  return s.substr(0, start) + "\033[38;2;105;105;105m" + s.substr(start, end - start + 1) + "\033[0m" + s.substr(end + 1, s.length());
+  return s.substr(0, start) + "\033[38;2;105;105;105m" +
+         s.substr(start, end - start + 1) + "\033[0m" +
+         s.substr(end + 1, s.length());
 }
 
 char *simplify_arithmetic_expression(const char *expression_in, int outputType,
@@ -436,7 +460,10 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
         if (!short_steps.empty()) {
           short_steps.pop_back();
         }
-        short_steps.push_back("==> " + make_text_noticeable(expr_without_plus_zero(std::string(expression)), start + 1, end - 1));
+        short_steps.push_back(
+            "==> " + make_text_noticeable(
+                         expr_without_plus_zero(std::string(expression)),
+                         start + 1, end - 1));
         for (auto i = 0; i < steps_sub.size(); ++i) {
           short_steps.push_back("  " + steps_sub[i]);
         }
@@ -480,10 +507,11 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
           (char *)realloc(simplifiedInnerExpression,
                           n + strlen(innerExpressionFraction.denominator) + 2);
       strcpy(simplifiedInnerExpression, innerExpressionFraction.numerator);
-      if (strcmp(innerExpressionFraction.denominator, "1")) { // Don't include the denominator if it's 1
+      if (strcmp(innerExpressionFraction.denominator,
+                 "1")) { // Don't include the denominator if it's 1
         strcpy(simplifiedInnerExpression + n, "/");
         strcpy(simplifiedInnerExpression + n + 1,
-              innerExpressionFraction.denominator);
+               innerExpressionFraction.denominator);
       }
       // Change division to multiplication.
       expression[start - 1] = '*';
@@ -552,7 +580,8 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
       strncpy(simplifiedExponentiation + squareBrackets, answer.numerator,
               strlen(answer.numerator));
       if (strcmp(answer.denominator, "1")) {
-        simplifiedExponentiation[strlen(answer.numerator) + squareBrackets] = '/';
+        simplifiedExponentiation[strlen(answer.numerator) + squareBrackets] =
+            '/';
         strncpy(simplifiedExponentiation + strlen(answer.numerator) + 1 +
                     squareBrackets,
                 answer.denominator, strlen(answer.denominator));
@@ -670,7 +699,8 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
 
       if (!short_step_to_add.empty()) {
         if (do_step) {
-          short_steps.push_back("==> " + make_text_noticeable(short_step_to_add, start, end));
+          short_steps.push_back(
+              "==> " + make_text_noticeable(short_step_to_add, start, end));
         } else {
           short_steps.push_back("==> " + short_step_to_add);
         }
@@ -681,7 +711,8 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
       if (do_step) {
         ++step;
         steps.push_back("Step #" + std::to_string(step) + ": Evaluate " +
-                        std::string(leftArgument) + std::string(1, sign) + std::string(rightArgument));
+                        std::string(leftArgument) + std::string(1, sign) +
+                        std::string(rightArgument));
       }
       char *operationResult;
       if (outputType == 0) {
@@ -752,7 +783,9 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
       replace_substring_from_position(start, end, &expression, operationResult);
       remove_misplaced_and_redundant_signs(&expression);
 
-      bool simplify_fraction_step = expr_without_plus_zero(expr_cpp) != expr_without_plus_zero(std::string(expression));
+      bool simplify_fraction_step =
+          expr_without_plus_zero(expr_cpp) !=
+          expr_without_plus_zero(std::string(expression));
 
       expr_cpp = expression;
       if (do_step) {
@@ -761,7 +794,8 @@ char *simplify_arithmetic_expression(const char *expression_in, int outputType,
         short_step_to_add = expr_without_plus_zero(expr_cpp);
       } else if (simplify_fraction_step) {
         ++step;
-        steps.push_back("Step #" + std::to_string(step) + ": Simplify fractions");
+        steps.push_back("Step #" + std::to_string(step) +
+                        ": Simplify fractions");
         steps.push_back("The resulting expression is:\n" +
                         expr_without_plus_zero(expr_cpp) + "\n");
         short_step_to_add = expr_without_plus_zero(expr_cpp);
