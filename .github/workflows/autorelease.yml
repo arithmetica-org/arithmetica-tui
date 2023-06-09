@@ -5,12 +5,12 @@ on:
     branches: [ "main" ]
 
 jobs:
-  modify-main-cpp:
+  modify-arithmetica-tui-cpp:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Modify main.cpp
+    - name: Modify arithmetica_tui.cpp
       run: |
         LATEST_TAG=$(curl -s "https://api.github.com/repos/arithmetica-org/arithmetica-tui/releases/latest" | jq -r '.tag_name')
         echo $LATEST_TAG
@@ -19,27 +19,27 @@ jobs:
         echo $GITHUB_API_URL
         AUTORELEASE_NO=$(curl -s $GITHUB_API_URL | jq -r '.total_commits')
         echo $AUTORELEASE_NO
-        sed -i "s/std::string autorelease = \".*\";/std::string autorelease = \"${AUTORELEASE_NO}\";/" src/main.cpp
-    - name: Upload main.cpp
+        sed -i "s/std::string autorelease = \".*\";/std::string autorelease = \"${AUTORELEASE_NO}\";/" src/arithmetica_tui.cpp
+    - name: Upload arithmetica_tui.cpp
       uses: actions/upload-artifact@v3
       with:
-        name: main-cpp
-        path: src/main.cpp
+        name: arithmetica-tui-cpp
+        path: src/arithmetica_tui.cpp
   build-linux:
     needs:
-      - modify-main-cpp
+      - modify-arithmetica-tui-cpp
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Remove main.cpp
-      run: rm src/main.cpp
-    - name: Download main.cpp
+    - name: Remove arithmetica_tui.cpp
+      run: rm src/arithmetica_tui.cpp
+    - name: Download arithmetica_tui.cpp
       uses: actions/download-artifact@v2
       with:
-        name: main-cpp
-    - name: Move main.cpp to src
-      run: mv main.cpp src
+        name: arithmetica-tui-cpp
+    - name: Move arithmetica_tui.cpp to src
+      run: mv arithmetica_tui.cpp src
     - name: Install nasm
       run: sudo apt install nasm
     - name: Clone submodules
@@ -57,19 +57,19 @@ jobs:
         path: build/src/arithmetica
   build-windows:
     needs:
-      - modify-main-cpp
+      - modify-arithmetica-tui-cpp
     permissions: write-all
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Remove main.cpp
-      run: rm src/main.cpp
-    - name: Download main.cpp
+    - name: Remove arithmetica_tui.cpp
+      run: rm src/arithmetica_tui.cpp
+    - name: Download arithmetica_tui.cpp
       uses: actions/download-artifact@v2
       with:
-        name: main-cpp
-    - name: Move main.cpp to src
-      run: mv main.cpp src
+        name: arithmetica-tui-cpp
+    - name: Move arithmetica_tui.cpp to src
+      run: mv arithmetica_tui.cpp src
     - name: Set up NASM
       uses: ilammy/setup-nasm@v1.3.0
     - name: Clone submodules
