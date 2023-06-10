@@ -90,3 +90,19 @@ TEST(EvalTests, Test11) {
   result = call_arithmetica_tui("showsteps\neval 0.1+0.1");
   ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval 0.1+0.1\\n\\n==> 0.1 + 0.1\\n    1  \\n==> -\\n    5  \\n[0.2, 1/5]\\n\\narithmetica> exit\\n");
 }
+
+TEST(EvalTests, Test12) {
+  std::string result;
+  result = call_arithmetica_tui("eval 7725/75-(24*300)/75");
+  ASSERT_EQ(result, "this test case fails rn");
+  result = call_arithmetica_tui("showsteps\neval 7725/75-(24*300)/75");
+  ASSERT_EQ(result, "this test case fails rn");
+}
+
+TEST(EvalTests, Test13) {
+  std::string result;
+  result = call_arithmetica_tui("eval (2*8+9)^(1/2)-(8-4)^(1/2)");
+  ASSERT_EQ(result, "this test case fails rn");
+  result = call_arithmetica_tui("showsteps\neval (2*8+9)^(1/2)-(8-4)^(1/2)");
+  ASSERT_EQ(result, "this test case fails rn");
+}
