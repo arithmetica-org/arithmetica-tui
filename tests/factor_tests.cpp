@@ -32,3 +32,11 @@ TEST(FactorTests, Test3) {
   result = call_arithmetica_tui("showsteps\nfactor x^2-4");
   ASSERT_EQ(result, "this test case fails rn");
 }
+
+TEST(FactorTests, Test4) {
+  std::string result;
+  result = call_arithmetica_tui("factor x^4-25x^2+144");
+  ASSERT_EQ(result, "this test case fails rn");
+  result = call_arithmetica_tui("showsteps\nfactor x^4-25x^2+144");
+  ASSERT_EQ(result, "this test case fails rn");
+}
