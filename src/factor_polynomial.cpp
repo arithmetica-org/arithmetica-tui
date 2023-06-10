@@ -258,7 +258,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
     ptr++;
   }
 
-  for (int i = expr_vec.size(); i < _size; i++) {
+  for (int i = ptr; i < _size; i++) {
     coefficients[ptr] = (char *)malloc(sizeof(char) * 2);
     strcpy(coefficients[ptr], "0");
     ptr++;

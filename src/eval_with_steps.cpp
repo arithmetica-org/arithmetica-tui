@@ -58,7 +58,8 @@ std::string expr_without_plus_zero(std::string expr) {
       continue;
     }
     if (substr.substr(0, 2) == "+0" && substr.length() >= 3) {
-      if (std::string(1, substr[2]).find_first_of("+-*/^") != std::string::npos) {
+      if (std::string(1, substr[2]).find_first_of("+-*/^") !=
+          std::string::npos) {
         // Remove the +0
         expr.replace(i, 2, "");
         i -= 2;
@@ -251,8 +252,21 @@ char *get_numerical_arguments(const char *expression, bool fromLeft,
           continue;
         }
 
-        if (expression[signIndex] == '-')
-          encounteredMinusSign = true;
+        if (expression[signIndex] == '-') {
+          // Check if this minus sign is an operator or a sign
+          bool is_not_operator = signIndex == 0 ||
+                                 expression[signIndex - 1] == '(' ||
+                                 expression[signIndex - 1] == '[' ||
+                                 expression[signIndex - 1] == '{' ||
+                                 expression[signIndex - 1] == '^' ||
+                                 expression[signIndex - 1] == '*' ||
+                                 expression[signIndex - 1] == '/' ||
+                                 expression[signIndex - 1] == '+' ||
+                                 expression[signIndex - 1] == '-';
+          if (!is_not_operator) {
+            encounteredMinusSign = true;
+          }
+        }
         length++;
         signIndex--;
       }
