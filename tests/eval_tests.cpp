@@ -96,10 +96,18 @@ TEST(EvalTests, Test12) {
   result = call_arithmetica_tui("eval 7725/75-(24*300)/75");
   ASSERT_EQ(result, "arithmetica> eval 7725/75-(24*300)/75\\n   \\n7\\n   \\narithmetica> exit\\n");
   result = call_arithmetica_tui("showsteps\neval 7725/75-(24*300)/75");
-  ASSERT_EQ(result, "this test case fails rn");
+  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval 7725/75-(24*300)/75\\n\\n    7725   24\xC3\x97" "300  \\n==> ---- - ------\\n     75      75    \\n  ==> 24 \xC3\x97 300\\n  ==> 7200\\n    7725   7200  \\n==> ---- - ----\\n     75     75   \\n    7725       \\n==> ---- - 96\\n     75        \\n==> 7\\n\\narithmetica> exit\\n");
 }
 
 TEST(EvalTests, Test13) {
+  std::string result;
+  result = call_arithmetica_tui("eval 1-(1*2)/2");
+  ASSERT_EQ(result, "arithmetica> eval 1-(1*2)/2\\n   \\n0\\n   \\narithmetica> exit\\n");
+  result = call_arithmetica_tui("showsteps\neval 1-(1*2)/2");
+  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval 1-(1*2)/2\\n\\n        1\xC3\x97" "2  \\n==> 1 - ---\\n         2   \\n  ==> 1 \xC3\x97 2\\n  ==> 2\\n        2  \\n==> 1 - -\\n        2  \\n==> 1 - 1\\n==> 0\\n\\narithmetica> exit\\n");
+}
+
+TEST(EvalTests, Test14) {
   std::string result;
   result = call_arithmetica_tui("eval (2*8+9)^(1/2)-(8-4)^(1/2)");
   ASSERT_EQ(result, "arithmetica> eval (2*8+9)^(1/2)-(8-4)^(1/2)\\n   \\n3\\n   \\narithmetica> exit\\n");

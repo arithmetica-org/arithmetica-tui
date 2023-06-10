@@ -462,17 +462,29 @@ void print_eval_expression(std::string expression, int outputType, int padding,
         print_eval_expression(right, outputType, padding, &rightTerms,
                               &rightSigns);
 
-        arithmetica::Fraction f;
-        if (!rightTerms.empty()) {
-          f = rightTerms[0];
+        bool signs_in_right = right.find_first_of("+-*") != std::string::npos;
+
+        bool frac_cond = false;
+        size_t index =
+            (rightTerms.empty() ? std::string::npos
+                                : rightTerms[0].find_first_of("+-*"));
+        if (!rightTerms.empty() && (index == std::string::npos ||
+                                    (index == 0 && rightTerms[0][0] == '-'))) {
+          arithmetica::Fraction f;
+          std::string s = rightTerms[0];
+          replace_all(s, "(", "");
+          replace_all(s, ")", "");
+          if (!rightTerms.empty()) {
+            f = s;
+          }
+          frac_cond = (f.numerator[0] == '-' || f.denominator != "1");
         }
 
         if ((right.length() >= 2 && right[0] == '(' &&
              algnum::get_matching_brace(right, 0) == right.length() - 1) ||
-            expression[i] == '^' &&
-                (rightTerms.size() > 1 ||
-                 (!rightTerms.empty() &&
-                  (f.numerator[0] == '-' || f.denominator != "1")))) {
+            (expression[i] == '^' &&
+             (rightTerms.size() > 1 || (!rightTerms.empty() && frac_cond))) ||
+            (expression[i] == '^' && signs_in_right)) {
           if (rightTerms.size() > 1) {
             rightTerms[0] = "(" + rightTerms[0];
             rightTerms.back() += ")";

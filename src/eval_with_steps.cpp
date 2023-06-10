@@ -288,13 +288,15 @@ char *get_numerical_arguments(const char *expression, bool fromLeft,
                2 * (expression[signIndex] == '[');
       signIndex = corresponding_closing_bracket;
 
-      // if (sign == '+' || sign == '-') {
-      //   ++signIndex;
-      //   goto eval_w_steps_right_fetch_no_brackets;
-      // }
+      if (sign == '+' || sign == '-') {
+        bool extra_bracket = (expression[signIndex] == ']' || expression[signIndex] == '}' || expression[signIndex] == ')');
+        signIndex += 1 + extra_bracket;
+        length += extra_bracket;
+        goto eval_w_steps_right_fetch_no_brackets;
+      }
     } else {
-      // eval_w_steps_right_fetch_no_brackets:
       start = signIndex;
+      eval_w_steps_right_fetch_no_brackets:
       while (signIndex < strlen(expression) &&
              (((!equal_to_any_from(operators, expression[signIndex],
                                    numberOfOperators)) &&

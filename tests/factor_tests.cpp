@@ -30,7 +30,7 @@ TEST(FactorTests, Test3) {
   result = call_arithmetica_tui("factor x^2-4");
   ASSERT_EQ(result, "arithmetica> factor x^2-4\\n\\n==> (x - 2)(x + 2)\\n\\narithmetica> exit\\n");
   result = call_arithmetica_tui("showsteps\nfactor x^2-4");
-  ASSERT_EQ(result, "arithmetica> showsteps\nshowsteps is now true\narithmetica> factor x^2-4\n\n==> x^2 - 4\n==> x^2 + 2x - 2x - 4\n==> x(x + 2) - 2(x + 2)\n==> (x - 2)(x + 2)\n\narithmetica> exit\n");
+  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> factor x^2-4\\n\\n==> x^2 - 4\\n==> x^2 + 2x - 2x - 4\\n==> x(x + 2) - 2(x + 2)\\n==> (x - 2)(x + 2)\\n\\narithmetica> exit\\n");
 }
 
 TEST(FactorTests, Test4) {
