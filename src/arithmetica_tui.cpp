@@ -383,8 +383,8 @@ void print_eval_expression(std::string expression, int outputType, int padding,
         expression[i] == '^') {
       if (expression[i] == '-') {
         long operational_sign = eval_with_steps::find_operational_sign(
-            expression.c_str() + i - (i == 0 ? 0 : 1), expression[i]);
-        if (operational_sign != 1) {
+            expression.c_str(), expression[i]);
+        if (operational_sign != i) {
           continue;
         }
       }
@@ -396,7 +396,8 @@ void print_eval_expression(std::string expression, int outputType, int padding,
 
       char temp = expression[i];
       if (expression[i] == '*') {
-        expression[i] = '+';
+        expression[i] = '+'; // I'm doing this instead of fixing the bug in
+                             // get_numerical_arguments because yes
       }
 
       long start = i, end = i;
