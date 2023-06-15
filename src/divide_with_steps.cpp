@@ -80,7 +80,7 @@ void divide_with_steps(const std::string &dividend_,
   std::size_t subtraction_bar_len = divisor.length();
   std::cout << std::string(space_to_leave - 3, '-') << " - "
             << std::string(
-                   std::max(0UL, dividend.length() - things_to_subtract[0].length()),
+                   std::max(0UL, (unsigned long)(dividend.length() - things_to_subtract[0].length())),
                    ' ')
             << things_to_subtract[0] << "\n";
 
@@ -98,8 +98,8 @@ void divide_with_steps(const std::string &dividend_,
 
     std::cout << std::string(space_to_leave, ' ') << carry_down_res[i] << "\n";
     std::cout << std::string(space_to_leave - 3, ' ') << " - "
-              << std::string(std::max(0UL, carry_down_res[i].length() -
-                                               things_to_subtract[i].length()),
+              << std::string(std::max(0UL, (unsigned long)(carry_down_res[i].length() -
+                                               things_to_subtract[i].length())),
                              ' ')
               << things_to_subtract[i] << "\n";
   }
