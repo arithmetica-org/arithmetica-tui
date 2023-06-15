@@ -2,9 +2,9 @@
 #include <algorithm>
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
+#include <cstring>
 #include <fstream>
 #include <iostream>
-#include <cstring>
 #include <unistd.h>
 #include <vector>
 
@@ -149,6 +149,9 @@ char getch() {
 std::string center(std::string str, size_t n) {
   return std::string((n - str.length()) / 2, ' ') + str;
 }
+
+void divide_with_steps(const std::string &dividend, const std::string &divisor,
+                       std::size_t accuracy);
 
 namespace eval_with_steps {
 char *get_numerical_arguments(const char *expression, bool fromLeft,
@@ -790,7 +793,6 @@ int arithmetica_tui(int argc, char **argv) {
                  "by default), toggle this by typing \"showsteps\".\n\n";
 
     std::cout << "To get started, type help.\n";
-    std::cout << "If you don't like reading helps, type quickstart instead.\n";
   }
 
   bool show_steps = false;
@@ -1649,7 +1651,16 @@ int arithmetica_tui(int argc, char **argv) {
       }
     }
     if (input.substr(0, 3) == "div") {
-      // https://github.com/avighnac/math-new/blob/main/basic_math_operations/Division%20Algorithm/divide.hpp
+      auto tokens = tokenize(input);
+      if (tokens.size() < 3) {
+        std::cout << "Invalid input!\n";
+        continue;
+      }
+      if (show_steps) {
+        divide_with_steps(tokens[1], tokens[2], accuracy);
+      } else {
+        std::cout << "==> " << divide(tokens[1], tokens[2], accuracy) << "\n";
+      }
     }
   }
 

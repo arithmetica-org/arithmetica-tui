@@ -14,7 +14,26 @@ curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/
 ```
 
 # Features
-<h1> 🔴 For a good demonstration, go visit this tool's website <a href="https://arithmetica-org.github.io/arithmetica-website/">here</a>! 🔴 </h1>
+
+<p>
+🔴 For a good demonstration, go visit this tool's website <a href="https://arithmetica-org.github.io/arithmetica-website/">here</a>! 🔴
+</p>
+
+| Feature | Description | Steps |
+| --- | --- | --- |
+| Factorization | Factorize any single variable polynomial. | ✅ |
+| Evaluation | Evaluate any arithmetic expression. | ✅ |
+| Addition | Add two numbers. | ✅ |
+| Multiplication | Multiply two numbers. | ✅ |
+| Division | Divide two numbers. | ✅ |
+| Trigonometric Functions | Compute the value of any non-hyperbolic trigonometric function. | ❌ |
+| Square Root | Compute the square root of any number. | ❌ |
+| Exponentiation | Compute the value of any exponentiation expression. | ❌ |
+| Logarithms | Compute the logarithm of any number with any base. | ❌ |
+| Factorial | Compute the factorial of any number. | ❌ |
+| Continued Fractions | Compute the continued fraction of any number. | ❌ |
+| Greatest Common Divisor | Compute the GCD of any two numbers. | ❌ |
+| Least Common Multiple | Compute the LCM of any two numbers. | ❌ |
 
 ## Factorize polynomials (with steps and without)
 Arithmetica can currently factorize any degree single variable polynomials!
