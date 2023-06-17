@@ -122,3 +122,19 @@ TEST(EvalTests, Test15) {
   result = call_arithmetica_tui("showsteps\neval (2*8+9)^(1/2)-(8-4)^(1/2)");
   ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval (2*8+9)^(1/2)-(8-4)^(1/2)\\n\\n                 1             1   \\n==> (2 \xC3\x97 8 + 9)^(-) - (8 - 4)^(-)\\n                 2             2   \\n  ==> 2 \xC3\x97 8 + 9\\n  ==> 16 + 9\\n  ==> 25\\n          1             1   \\n==> (25)^(-) - (8 - 4)^(-)\\n          2             2   \\n  ==> 8 - 4\\n  ==> 4\\n          1               \\n==> (25)^(-) - (4)^(1/2)\\n          2               \\n          1       \\n==> (25)^(-) - 2\\n          2       \\n==> 5 - 2\\n==> 3\\n\\narithmetica> exit\\n");
 }
+
+TEST(EvalTests, Test16) {
+  std::string result;
+  result = call_arithmetica_tui("eval -(1)^(1/1)");
+  ASSERT_EQ(result, "arithmetica> eval -(1)^(1/1)\\n    \\n-1\\n    \\narithmetica> exit\\n");
+  result = call_arithmetica_tui("showsteps\neval -(1)^(1/1)");
+  ASSERT_EQ(result, "this test fails");
+}
+
+TEST(EvalTests, Test) {
+  std::string result;
+  result = call_arithmetica_tui("eval -1^(1/1)");
+  ASSERT_EQ(result, "arithmetica> eval -1^(1/1)\\n    \\n-1\\n    \\narithmetica> exit\\n");
+  result = call_arithmetica_tui("showsteps\neval -1^(1/1)");
+  ASSERT_EQ(result, "this test fails"); 
+}
