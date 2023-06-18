@@ -22,9 +22,6 @@ target_link_libraries(arithmetica-tui-lib PRIVATE arithmetica)
 target_link_libraries(arithmetica-tui-lib PRIVATE basic_math_operations)
 
 if (BUILD_MAIN_EXECUTABLE)
-    # If in debug mode, modify flags
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -O0")
-
     add_executable(arithmetica-tui main.cpp)
     target_link_libraries(arithmetica-tui PRIVATE arithmetica-tui-lib)
     if (BUILD_RELEASE)

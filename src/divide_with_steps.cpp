@@ -1,6 +1,5 @@
 #include <basic_math_operations.hpp>
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -23,7 +22,8 @@ void divide_with_steps(const std::string &dividend_,
 
   std::string quotient;
 
-  std::map<int, std::string> multiplication_table;
+  std::vector<std::string> multiplication_table;
+  multiplication_table.reserve(10);
   for (char i = '0'; i <= '9'; ++i) {
     multiplication_table[i - '0'] = multiply(divisor, std::string(1, i));
   }
