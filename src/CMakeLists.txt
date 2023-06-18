@@ -28,6 +28,23 @@ if (BUILD_MAIN_EXECUTABLE)
         # Add '-static -static-libstdc++ -static-libgcc' compiler flags
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static -static-libstdc++ -static-libgcc")
     endif()
+    
+    # Add an icon if we're on Windows
+    if (WIN32)
+        # Set the path to the icon file
+        set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../icon.ico")
+
+        # Generate the resource script
+        set(RESOURCE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/icon.rc")
+        file(WRITE ${RESOURCE_SCRIPT} "1 ICON \"${ICON_FILE}\"")
+
+        # Compile the resource script using windres
+        set(RESOURCE_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/icon.o")
+        execute_process(COMMAND windres ${RESOURCE_SCRIPT} -O coff -o ${RESOURCE_OBJECT})
+
+        # Link the resource object with the target executable
+        target_link_libraries(arithmetica-tui PRIVATE ${RESOURCE_OBJECT})
+    endif()
 
     # Rename target to 'arithmetica'
     set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME arithmetica)
