@@ -551,9 +551,30 @@ void print_eval_expression(std::string expression, int outputType, int padding,
 std::vector<std::string> tokenize(std::string s) {
   // Tokenize on the character ' ', essentially splitting the string into its
   // individual words
+  // Also don't split on spaces inside of parentheses
+
+  // Replace all parentheses with with '(' and ')'
+  replace_all(s, "[", "(");
+  replace_all(s, "]", ")");
+  replace_all(s, "{", "(");
+  replace_all(s, "}", ")");
+
+  int bracket_count = 0;
+
   std::vector<std::string> tokens;
   std::string token;
   for (size_t i = 0; i < s.length(); i++) {
+    if (s[i] == '(') {
+      bracket_count++;
+    } else if (s[i] == ')') {
+      bracket_count--;
+    }
+
+    if (bracket_count != 0) {
+      token += s[i];
+      continue;
+    }
+
     if (s[i] == ' ') {
       tokens.push_back(token);
       token.clear();
@@ -1433,6 +1454,10 @@ int arithmetica_tui(int argc, char **argv) {
         continue;
       }
 
+      for (std::size_t i = 3; i < tokens.size(); ++i) {
+        tokens[2] += "+" + tokens[i];
+      }
+
       if (tokens[1].find_first_of(
               "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") !=
               std::string::npos ||
@@ -1543,6 +1568,16 @@ int arithmetica_tui(int argc, char **argv) {
         std::cout << "Example usage: mul 1/2 1/2 => 1/4\n";
         continue;
       }
+
+      for (std::size_t i = 3; i < tokens.size(); ++i) {
+        if (!(tokens[2].back() == '+' || '-' || '*' || '/')) {
+          tokens[2] += "*";
+        }
+        tokens[2] += tokens[i];
+      }
+
+      std::cout << "tokens[1] = " << tokens[1] << "\n";
+      std::cout << "tokens[2] = " << tokens[2] << "\n";
 
       for (std::string &i : tokens) {
         if (i == "$PREV_RESULT") {

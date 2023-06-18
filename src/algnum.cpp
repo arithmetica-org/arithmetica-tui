@@ -904,6 +904,11 @@ algexpr::algexpr(const char *s) {
   auto supportedFunctions = get_supported_functions();
   remove_all_non_functional_brackets(input, supportedFunctions);
 
+  
+  while (input.find(" - ") != std::string::npos) {
+    replace_all(input, " - ", "-");
+  }
+
   replace_all(input, "-", "+-");
 
   std::vector<std::string> numbers = split_string_for_algexpr(input, '+');
