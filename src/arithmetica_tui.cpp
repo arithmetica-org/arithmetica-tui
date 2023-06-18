@@ -1576,9 +1576,6 @@ int arithmetica_tui(int argc, char **argv) {
         tokens[2] += tokens[i];
       }
 
-      std::cout << "tokens[1] = " << tokens[1] << "\n";
-      std::cout << "tokens[2] = " << tokens[2] << "\n";
-
       for (std::string &i : tokens) {
         if (i == "$PREV_RESULT") {
           i = prev_result;
