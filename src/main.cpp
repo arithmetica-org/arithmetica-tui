@@ -1,4 +1,3 @@
-#include <fstream>
 #include <iostream>
 
 int arithmetica_tui(int argc, char **argv, std::istream &in = std::cin,

@@ -60,10 +60,17 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
   using namespace basic_math_operations;
   using namespace arithmetica;
 
+  auto original_cout = outstream.rdbuf();
+  auto original_cin = instream.rdbuf();
+
   outstream.rdbuf(outstream_.rdbuf());
   instream.rdbuf(instream_.rdbuf());
 
   std::string printable_version = "arithmetica ";
+
+  std::vector<std::string> history;
+  std::string prev_result;
+  int history_index = -1; // Current history item
 
   if (!autorelease.empty() && autorelease != "0") {
     printable_version += "alpha (" + autorelease + " commit";
@@ -77,19 +84,25 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
 
   bool no_introduction = false;
   bool reprint_input = false;
+  bool show_steps = false;
+  bool degree_mode = true;
+  bool enable_fractions_eval = true;
+  bool verbose_eval = false;
+  bool numeric_eval = false;
+  bool experimental_pretty_fractions_eval = true;
 
   if (argc >= 2) {
     if (std::string(argv[1]) == "--version") {
       outstream << printable_version << "\n";
-      return 0;
+      goto ret;
     }
     if (std::string(argv[1]) == "--get-tag") {
       if (!autorelease.empty() && autorelease != "0") {
         outstream << version << "-alpha-" << autorelease << "\n";
-        return 0;
+        goto ret;
       }
       outstream << version << "\n";
-      return 0;
+      goto ret;
     }
 
     if (std::string(argv[1]) == "--update-bleeding-edge") {
@@ -154,17 +167,6 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
 
     outstream << "To get started, type help.\n";
   }
-
-  bool show_steps = false;
-  bool degree_mode = true;
-  bool enable_fractions_eval = true;
-  bool verbose_eval = false;
-  bool numeric_eval = false;
-  bool experimental_pretty_fractions_eval = true;
-
-  std::vector<std::string> history;
-  std::string prev_result;
-  int history_index = -1; // Current history item
 
   while (true) {
     ++history_index;
@@ -1010,5 +1012,9 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
     }
   }
 
+ret:
+  // Restore the cout and cin buffers
+  std::cout.rdbuf(original_cout);
+  std::cin.rdbuf(original_cin);
   return 0;
 }
