@@ -40,8 +40,13 @@ jobs:
         name: arithmetica-tui-cpp
     - name: Move arithmetica_tui.cpp to src
       run: mv arithmetica_tui.cpp src
-    - name: Install nasm
-      run: sudo apt install nasm
+    - name: Install and update packages
+      run: |
+        sudo apt update
+        sudo apt install gcc
+        sudo apt install g++
+        sudo apt install nasm
+        sudo apt install valgrind
     - name: Clone submodules
       run: git submodule update --init --recursive
     - name: Compile arithmetica-tui for Linux

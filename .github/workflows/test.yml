@@ -13,6 +13,8 @@ jobs:
     - name: Install nasm and valgrind
       run: |
         sudo apt update
+        sudo apt install gcc
+        sudo apt install g++
         sudo apt install nasm
         sudo apt install valgrind
     - name: Compile tests

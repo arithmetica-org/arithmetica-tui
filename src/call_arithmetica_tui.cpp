@@ -89,10 +89,11 @@ std::string call_arithmetica_tui(std::string command) {
 
   int pipefd[2];
 #ifdef _WIN32
-  if (_pipe(pipefd, 4096, O_BINARY) == -1) {
+  if (_pipe(pipefd, 4096, O_BINARY) == -1)
 #else
-  if (pipe(pipefd) == -1) {
+  if (pipe(pipefd) == -1)
 #endif
+  {
     perror("pipe");
     return nullptr;
   }
