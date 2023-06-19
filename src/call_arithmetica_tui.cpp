@@ -22,57 +22,42 @@ void insert_characters_into_line(std::string &line, std::string chars,
 }
 
 std::string shorten_console_output(std::string str) {
-  std::vector<std::string> answer = {""};
+  std::string answer;
+  std::string current_line;
 
   int cursor_location = 0;
-  size_t line_index = 0;
 
   for (auto &i : str) {
-    if (answer[line_index].length() >= 2 &&
-        answer[line_index].substr(answer[line_index].length() - 2, 2) == "\\r") {
+    if (current_line.length() >= 2 &&
+        current_line.substr(current_line.length() - 2, 2) == "\\r") {
       cursor_location = 0;
-      answer[line_index] = answer[line_index].substr(0, answer[line_index].length() - 2);
+      current_line = current_line.substr(0, current_line.length() - 2);
     }
-    if (answer[line_index].length() >= 7 &&
-        answer[line_index].substr(answer[line_index].length() - 7, 7) == "\\033[2K") {
-      answer[line_index].clear();
-    }
-    if (answer[line_index].length() >= 6 &&
-        answer[line_index].substr(answer[line_index].length() - 6, 6) == "\\033[A") {
-      answer[line_index] = answer[line_index].substr(0, answer[line_index].length() - 6);
-      if (line_index > 0) {
-        --line_index;
-      }
+    if (current_line.length() >= 7 &&
+        current_line.substr(current_line.length() - 7, 7) == "\\033[2K") {
+      current_line.clear();
     }
 
     if (i == '\033') {
-      insert_characters_into_line(answer[line_index], "\\033", cursor_location);
+      insert_characters_into_line(current_line, "\\033", cursor_location);
       continue;
     }
     if (i == '\r') {
-      insert_characters_into_line(answer[line_index], "\\r", cursor_location);
+      insert_characters_into_line(current_line, "\\r", cursor_location);
       continue;
     }
     if (i == '\n') {
-      if (line_index == answer.size() - 1)
-        answer.push_back("");
+      answer += current_line + "\\n";
+      current_line.clear();
       cursor_location = 0;
-      ++line_index;
       continue;
     }
 
-    insert_characters_into_line(answer[line_index], std::string(1, i),
+    insert_characters_into_line(current_line, std::string(1, i),
                                 cursor_location);
   }
 
-  std::string answer_str;
-  for (size_t i = 0; i < answer.size(); ++i) {
-    answer_str += answer[i];
-    if (i != answer.size() - 1) {
-      answer_str += "\\n";
-    }
-  }
-  return answer_str;
+  return answer;
 }
 
 #ifdef _WIN32
