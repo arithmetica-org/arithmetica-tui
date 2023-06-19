@@ -38,6 +38,7 @@ add_library(arithmetica-tui-lib STATIC ${sources} ${helper_sources})
 target_link_libraries(arithmetica-tui-lib PRIVATE arithmetica)
 target_link_libraries(arithmetica-tui-lib PRIVATE basic_math_operations)
 
+target_include_directories(arithmetica-tui-lib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(arithmetica-tui-lib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/helpers)
 target_include_directories(arithmetica-tui-lib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/functions)
 

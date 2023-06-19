@@ -2,7 +2,7 @@
 
 void print_eval_expression(std::string expression, int outputType, int padding,
                            std::vector<std::string> *outTerms,
-                           std::vector<std::string> *outSigns) {
+                           std::vector<std::string> *outSigns, std::ostream &outstream) {
   expression = remove_extra_front_back_brackets(expression);
 
   size_t index = expression.rfind("==> ");
@@ -203,8 +203,8 @@ void print_eval_expression(std::string expression, int outputType, int padding,
       continue;
     }
     if (i == 1) {
-      std::cout << beginning_to_print;
+      outstream << beginning_to_print;
     }
-    std::cout << out[i] << "\n";
+    outstream << out[i] << "\n";
   }
 }

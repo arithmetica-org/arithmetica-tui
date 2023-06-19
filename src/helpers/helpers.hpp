@@ -27,7 +27,7 @@ std::string center(std::string str, size_t n);
 std::string remove_extra_front_back_brackets(std::string str);
 size_t get_matching_brace(std::string str, size_t index);
 std::vector<std::string> get_printable_result(std::string str);
-void print_result(std::string str);
+void print_result(std::string str, std::ostream &outstream = std::cout);
 void print_expression(std::vector<std::string> terms,
                       std::vector<std::string> signs, int padding,
                       std::ofstream *file = NULL,
@@ -35,10 +35,11 @@ void print_expression(std::vector<std::string> terms,
                       size_t padding_exclude = 0);
 void print_eval_expression(std::string expression, int outputType, int padding,
                            std::vector<std::string> *outTerms = NULL,
-                           std::vector<std::string> *outSigns = NULL);
+                           std::vector<std::string> *outSigns = NULL,
+                           std::ostream &outstream = std::cout);
 std::vector<std::string> tokenize(std::string s);
 bool check_for_implicit_eval(std::string &s);
 
 #ifdef __linux__
-char getch();
+char getch(std::istream &instream);
 #endif

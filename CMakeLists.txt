@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.0)
 project(arithmetica-tui)
 
 option(BUILD_RELEASE "Build for a GitHub release" ON)
-option(BUILD_MAIN_EXECUTABLE "Build the main executable" ON)
+option(BUILD_MAIN_EXECUTABLE "Build the main executable" OFF)
 option(USE_SUBMODULE_AM_BMO "Fetch arithmetica and basic_math_operations using FetchContent" ON)
-option(ARITHMETICA_TUI_TESTS "Build tests" OFF)
+option(ARITHMETICA_TUI_TESTS "Build tests" ON)
 
 if(WIN32 OR USE_SUBMODULE_AM_BMO)
     # First fetch the repositories

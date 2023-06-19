@@ -1,10 +1,11 @@
-extern int arithmetica_tui(int argc, char **argv);
-
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
 #include <vector>
+
+int arithmetica_tui(int argc, char **argv, std::istream &instream_ = std::cin,
+                    std::ostream &outstream_ = std::cout);
 
 void insert_characters_into_line(std::string &line, std::string chars,
                                  int &cursor_location) {
@@ -60,53 +61,8 @@ std::string shorten_console_output(std::string str) {
   return answer;
 }
 
-#ifdef _WIN32
-#include <io.h>
-#include <fcntl.h>
-#endif
-
 std::string call_arithmetica_tui(std::string command) {
   command += "\nexit\n";
-
-  std::stringstream s;
-  auto buf = std::cout.rdbuf();
-  std::cout.rdbuf(s.rdbuf());
-
-  int pipefd[2];
-#ifdef _WIN32
-  if (_pipe(pipefd, 4096, O_BINARY) == -1)
-#else
-  if (pipe(pipefd) == -1)
-#endif
-  {
-    perror("pipe");
-    return nullptr;
-  }
-
-  int stdinfd = dup(fileno(stdin));
-  if (stdinfd == -1) {
-    perror("dup");
-    close(pipefd[0]);
-    close(pipefd[1]);
-    return nullptr;
-  }
-
-  if (dup2(pipefd[0], fileno(stdin)) == -1) {
-    perror("dup2");
-    close(pipefd[0]);
-    close(pipefd[1]);
-    return nullptr;
-  }
-
-  FILE *pipeWrite = fdopen(pipefd[1], "w");
-  if (pipeWrite == nullptr) {
-    perror("fdopen");
-    close(pipefd[0]);
-    close(pipefd[1]);
-    return nullptr;
-  }
-  fprintf(pipeWrite, command.c_str());
-  fclose(pipeWrite);
 
   std::vector<std::string> argv_vec = {"arithmetica", "--no-introduction"};
 
@@ -120,21 +76,13 @@ std::string call_arithmetica_tui(std::string command) {
   }
   argv_cstr.push_back(nullptr);
 
+  std::stringstream in, out;
+  in << command;
   int n =
-      arithmetica_tui(static_cast<int>(argv_cstr.size() - 1), argv_cstr.data());
+      arithmetica_tui(static_cast<int>(argv_cstr.size() - 1), argv_cstr.data(), in, out);
 
-  if (dup2(stdinfd, fileno(stdin)) == -1) {
-    std::cerr << "Failed to restore stdin." << std::endl;
-    close(pipefd[0]);
-    close(pipefd[1]);
-    return nullptr;
-  }
-  close(pipefd[0]);
-  close(pipefd[1]);
+  std::string answer = out.str();
+  answer = shorten_console_output(answer);
 
-  std::cout.rdbuf(buf);
-  std::string test = s.str();
-  test = shorten_console_output(test);
-  
-  return test;
+  return answer;
 }

@@ -42,8 +42,8 @@ void print_add_whole_steps(std::string l_in, std::string s_in) {
   std::reverse(carry_column.begin(), carry_column.end());
   std::reverse(answer.begin(), answer.end());
 
-  std::cout << " \u001b[35m" << carry_column << "\u001b[0m\n";
-  std::cout << "  " << l_in << "\n+ "
+  outstream << " \u001b[35m" << carry_column << "\u001b[0m\n";
+  outstream << "  " << l_in << "\n+ "
             << std::string(l_in.length() - s_in.length(), ' ') << s_in << "\n"
             << std::string(l_in.length() + 2, '-') << "\n"
             << std::string(l_in.length() + 2 - answer.length(), ' ')
@@ -55,9 +55,13 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
-int arithmetica_tui(int argc, char **argv) {
+int arithmetica_tui(int argc, char **argv, std::istream &instream_,
+                    std::ostream &outstream_) {
   using namespace basic_math_operations;
   using namespace arithmetica;
+
+  outstream.rdbuf(outstream_.rdbuf());
+  instream.rdbuf(instream_.rdbuf());
 
   std::string printable_version = "arithmetica ";
 
@@ -76,15 +80,15 @@ int arithmetica_tui(int argc, char **argv) {
 
   if (argc >= 2) {
     if (std::string(argv[1]) == "--version") {
-      std::cout << printable_version << "\n";
+      outstream << printable_version << "\n";
       return 0;
     }
     if (std::string(argv[1]) == "--get-tag") {
       if (!autorelease.empty() && autorelease != "0") {
-        std::cout << version << "-alpha-" << autorelease << "\n";
+        outstream << version << "-alpha-" << autorelease << "\n";
         return 0;
       }
-      std::cout << version << "\n";
+      outstream << version << "\n";
       return 0;
     }
 
@@ -128,27 +132,27 @@ int arithmetica_tui(int argc, char **argv) {
   }
 
   if (argc != 1 && (!no_introduction)) {
-    std::cout << "Usage: arithmetica [--version] [--get-tag] [--update] "
+    outstream << "Usage: arithmetica [--version] [--get-tag] [--update] "
                  "[--update-bleeding-edge] [-i] [-o]\n";
     std::exit(0);
   }
 
   if (!no_introduction) {
-    std::cout << printable_version;
+    outstream << printable_version;
 
     if (!autorelease.empty() && autorelease != "0") {
-      std::cout << "\n"
+      outstream << "\n"
                 << "This version was automatically compiled and released by "
                    "GitHub Actions. Due to its bleeding edge nature, some "
                    "features might be unstable.\n";
     }
 
-    std::cout << "\nhttps://github.com/arithmetica-org/arithmetica-tui\n\n";
+    outstream << "\nhttps://github.com/arithmetica-org/arithmetica-tui\n\n";
 
-    std::cout << "arithmetica supports showing working with steps (disabled "
+    outstream << "arithmetica supports showing working with steps (disabled "
                  "by default), toggle this by typing \"showsteps\".\n\n";
 
-    std::cout << "To get started, type help.\n";
+    outstream << "To get started, type help.\n";
   }
 
   bool show_steps = false;
@@ -167,38 +171,38 @@ int arithmetica_tui(int argc, char **argv) {
     history.push_back("");
     std::string input;
     size_t input_index = 0;
-    std::cout << "arithmetica> ";
+    outstream << "arithmetica> ";
 
     char c;
 #ifdef __linux__
-    while ((c = getch()) != '\n') {
+    while ((c = getch(instream)) != '\n') {
       if (c == 27) { // Escape character (arrow key)
-        c = getch();
+        c = getch(instream);
         if (c == 91) { // Left square bracket
-          c = getch();
+          c = getch(instream);
           if (c == 65) { // Up arrow
             if (history_index != 0) {
               history_index--;
             }
             input = history[history_index];
             input_index = input.length();
-            std::cout << "\33[2K\rarithmetica> " << input;
+            outstream << "\33[2K\rarithmetica> " << input;
           } else if (c == 66) { // Down arrow
             if (history_index < history.size() - 1) {
               history_index++;
             }
             input = history[history_index];
             input_index = input.length();
-            std::cout << "\33[2K\rarithmetica> " << input;
+            outstream << "\33[2K\rarithmetica> " << input;
           } else if (c == 67) { // Right arrow
             if (input_index < input.length()) {
               input_index++;
-              std::cout << "\rarithmetica> " << input.substr(0, input_index);
+              outstream << "\rarithmetica> " << input.substr(0, input_index);
             }
           } else if (c == 68) { // Left arrow
             if (input_index != 0) {
               input_index--;
-              std::cout << "\rarithmetica> " << input.substr(0, input_index);
+              outstream << "\rarithmetica> " << input.substr(0, input_index);
             }
           }
         }
@@ -214,10 +218,10 @@ int arithmetica_tui(int argc, char **argv) {
           }
           for (size_t i = 0; i < (input.length() + 13) / get_console_width();
                ++i) {
-            std::cout << "\33[2K\r\033[A";
+            outstream << "\33[2K\r\033[A";
           }
-          std::cout << "\33[2K\rarithmetica> " << input;
-          std::cout << "\rarithmetica> " << input.substr(0, input_index);
+          outstream << "\33[2K\rarithmetica> " << input;
+          outstream << "\rarithmetica> " << input.substr(0, input_index);
         }
       } else {
         // Add the character to the string in front of [input_index]
@@ -229,10 +233,10 @@ int arithmetica_tui(int argc, char **argv) {
         input_index++;
         for (size_t i = 0; i < (input.length() + 11) / get_console_width();
              ++i) {
-          std::cout << "\33[2K\r\033[A";
+          outstream << "\33[2K\r\033[A";
         }
-        std::cout << "\33[2K\rarithmetica> " << input;
-        std::cout << "\rarithmetica> " << input.substr(0, input_index);
+        outstream << "\33[2K\rarithmetica> " << input;
+        outstream << "\rarithmetica> " << input.substr(0, input_index);
       }
     }
 #endif
@@ -241,10 +245,10 @@ int arithmetica_tui(int argc, char **argv) {
     // Fortunately, windows supports arrow keys and history during std::getline
     // by default Which is amazing, for once windows is better than linux Thank
     // you Microsoft
-    std::getline(std::cin, input);
+    std::getline(instream, input);
 
     if (reprint_input) {
-      std::cout << "\rarithmetica> " << input << "\n";
+      outstream << "\rarithmetica> " << input << "\n";
     }
 #endif
 
@@ -261,7 +265,7 @@ int arithmetica_tui(int argc, char **argv) {
 #endif
 
 #ifdef __linux__
-    std::cout << "\n";
+    outstream << "\n";
 #endif
 
     // remove front and back whitespace
@@ -272,52 +276,52 @@ int arithmetica_tui(int argc, char **argv) {
 
     if (input.substr(0, 4) == "help") {
       if (tokens.size() == 1) {
-        std::cout << "\n";
-        std::cout << "help - show this help message\n";
-        std::cout << "quickstart - show a quickstart guide\n";
-        std::cout
+        outstream << "\n";
+        outstream << "help - show this help message\n";
+        outstream << "quickstart - show a quickstart guide\n";
+        outstream
             << "showsteps - toggle showing steps (for supported functions)\n";
-        std::cout << "eval <expression> - evaluate an arithmetic expression\n";
-        std::cout << "add <number/algexpr> <number/algexpr> - add two numbers "
+        outstream << "eval <expression> - evaluate an arithmetic expression\n";
+        outstream << "add <number/algexpr> <number/algexpr> - add two numbers "
                      "or algebraic expressions\n";
-        std::cout << "mul <number/algexpr> <number/algexpr> - multiply two "
+        outstream << "mul <number/algexpr> <number/algexpr> - multiply two "
                      "numbers or algebraic expressions\n";
-        std::cout << "factor <polynomial> - factor a polynomial\n";
-        std::cout << "sin/cos/tan <angle> - trigonometric functions\n";
-        std::cout << "asin/acos/atan <number> - inverse trigonometric "
+        outstream << "factor <polynomial> - factor a polynomial\n";
+        outstream << "sin/cos/tan <angle> - trigonometric functions\n";
+        outstream << "asin/acos/atan <number> - inverse trigonometric "
                      "functions\n";
-        std::cout << "sqrt <number> - square root\n";
-        std::cout << "exp <number> - compute e^<number>\n";
-        std::cout
+        outstream << "sqrt <number> - square root\n";
+        outstream << "exp <number> - compute e^<number>\n";
+        outstream
             << "log <base> <number> - compute log_<base>(<number>), or ln "
                "(<number>) if <base> is not specified\n";
-        std::cout << "fact <number> - computes the factorial of <number>\n";
-        std::cout << "tocontfrac <number> - converts <number> to a continued "
+        outstream << "fact <number> - computes the factorial of <number>\n";
+        outstream << "tocontfrac <number> - converts <number> to a continued "
                      "fraction\n";
-        std::cout << "gcd <number> <number> ... - computes the greatest common "
+        outstream << "gcd <number> <number> ... - computes the greatest common "
                      "divisor of the given numbers\n";
-        std::cout << "lcm <number> <number> ... - computes the least common "
+        outstream << "lcm <number> <number> ... - computes the least common "
                      "multiple of the given numbers\n";
-        std::cout
+        outstream
             << "\nFor help with a specific function, type help <function>\n\n";
-        std::cout << "Options:\n";
-        std::cout << "  showsteps - " << (show_steps ? "true" : "false")
+        outstream << "Options:\n";
+        outstream << "  showsteps - " << (show_steps ? "true" : "false")
                   << "\n";
-        std::cout << "  degreemode - " << (degree_mode ? "enabled" : "disabled")
+        outstream << "  degreemode - " << (degree_mode ? "enabled" : "disabled")
                   << "\n";
-        std::cout << "  fractionseval (enable fractions during eval) - "
+        outstream << "  fractionseval (enable fractions during eval) - "
                   << (enable_fractions_eval ? "enabled" : "disabled") << "\n";
-        std::cout << "  verboseeval (include verbose explanations with steps "
+        outstream << "  verboseeval (include verbose explanations with steps "
                      "during eval) - "
                   << (verbose_eval ? "enabled" : "disabled") << "\n";
-        std::cout << "  numericeval (purely numeric evaluation during eval) - "
+        outstream << "  numericeval (purely numeric evaluation during eval) - "
                   << (numeric_eval ? "enabled" : "disabled") << "\n";
-        std::cout
+        outstream
             << "  experimentalprettyfractionseval (pretty print fractions "
                "during eval) - "
             << (experimental_pretty_fractions_eval ? "enabled" : "disabled")
             << "\n";
-        std::cout << "  accuracy - " << accuracy
+        outstream << "  accuracy - " << accuracy
                   << ", change with accuracy <num>\n\n";
         continue;
       }
@@ -331,7 +335,7 @@ int arithmetica_tui(int argc, char **argv) {
       if (tokens.size() == 1) {
         experimental_pretty_fractions_eval =
             !experimental_pretty_fractions_eval;
-        std::cout << "experimentalprettyfractionseval is now "
+        outstream << "experimentalprettyfractionseval is now "
                   << (experimental_pretty_fractions_eval ? "enabled"
                                                          : "disabled")
                   << "\n";
@@ -343,7 +347,7 @@ int arithmetica_tui(int argc, char **argv) {
       } else if (tokens[1] == "false") {
         experimental_pretty_fractions_eval = false;
       } else {
-        std::cout << "Usage: experimentalprettyfractionseval <true/false>\n";
+        outstream << "Usage: experimentalprettyfractionseval <true/false>\n";
       }
       continue;
     }
@@ -351,7 +355,7 @@ int arithmetica_tui(int argc, char **argv) {
     if (input.substr(0, 3) == "gcd") {
 
       if (tokens.size() < 2) {
-        std::cout << "Usage: gcd <number> <number> ...\n";
+        outstream << "Usage: gcd <number> <number> ...\n";
         continue;
       }
 
@@ -360,12 +364,12 @@ int arithmetica_tui(int argc, char **argv) {
         gcd = arithmetica::igcd(gcd, tokens[i]);
       }
 
-      std::cout << "==> " << gcd << "\n";
+      outstream << "==> " << gcd << "\n";
     }
     if (input.substr(0, 3) == "lcm") {
 
       if (tokens.size() < 2) {
-        std::cout << "Usage: lcm <number> <number> ...\n";
+        outstream << "Usage: lcm <number> <number> ...\n";
         continue;
       }
 
@@ -374,36 +378,36 @@ int arithmetica_tui(int argc, char **argv) {
         lcm = arithmetica::ilcm(lcm, tokens[i]);
       }
 
-      std::cout << "==> " << lcm << "\n";
+      outstream << "==> " << lcm << "\n";
     }
     if (input.substr(0, 10) == "tocontfrac") {
 
       if (tokens.size() != 2) {
-        std::cout << "Usage: tocontfrac <number>\n";
+        outstream << "Usage: tocontfrac <number>\n";
         continue;
       }
 
       arithmetica::Fraction f = tokens[1];
       auto answer = arithmetica::fraction_to_continued_fraction(f.numerator,
                                                                 f.denominator);
-      std::cout << "==> [" << answer[0] << "; ";
+      outstream << "==> [" << answer[0] << "; ";
       for (int i = 1; i < answer.size(); i++) {
-        std::cout << answer[i];
+        outstream << answer[i];
         if (i != answer.size() - 1) {
-          std::cout << ", ";
+          outstream << ", ";
         }
       }
-      std::cout << "]\n";
+      outstream << "]\n";
     }
     if (tokenize(input)[0] == "fact" || tokenize(input)[0] == "factorial") {
 
       if (tokens.size() != 2) {
-        std::cout << "Usage: fact <number>\n";
+        outstream << "Usage: fact <number>\n";
         continue;
       }
 
       if (tokens[1].find('.') != std::string::npos) {
-        std::cout << "Invalid argument: " << tokens[1] << "\n";
+        outstream << "Invalid argument: " << tokens[1] << "\n";
         continue;
       }
 
@@ -411,33 +415,33 @@ int arithmetica_tui(int argc, char **argv) {
       try {
         n = std::stoull(tokens[1]);
       } catch (std::invalid_argument &e) {
-        std::cout << "Invalid argument: " << tokens[1] << "\n";
+        outstream << "Invalid argument: " << tokens[1] << "\n";
         continue;
       } catch (std::out_of_range &e) {
-        std::cout << "Number too large (for now): " << tokens[1] << "\n";
+        outstream << "Number too large (for now): " << tokens[1] << "\n";
         continue;
       }
 
       if (n == 0) {
-        std::cout << "==> 1\n";
+        outstream << "==> 1\n";
         continue;
       }
 
-      std::cout << "==> " << arithmetica::factorial(n) << "\n";
+      outstream << "==> " << arithmetica::factorial(n) << "\n";
     }
     if (input.substr(0, 3) == "log") {
 
       if (tokens.size() != 2 && tokens.size() != 3) {
-        std::cout << "Usage: log <base> <number>\n";
+        outstream << "Usage: log <base> <number>\n";
         continue;
       }
 
       if (tokens.size() == 2) {
-        std::cout << "==> "
+        outstream << "==> "
                   << arithmetica::natural_logarithm(tokens[1], accuracy)
                   << "\n";
       } else {
-        std::cout
+        outstream
             << "==> "
             << round_decimal(
                    basic_math_operations::divide(
@@ -450,34 +454,34 @@ int arithmetica_tui(int argc, char **argv) {
     }
     if (tokens[0] == "exp" || tokens[0] == "exponential") {
       if (tokens.size() != 2) {
-        std::cout << "Usage: exp <number>\n";
+        outstream << "Usage: exp <number>\n";
         continue;
       }
-      std::cout << "==> " << arithmetica::exponential(tokens[1], accuracy)
+      outstream << "==> " << arithmetica::exponential(tokens[1], accuracy)
                 << "\n";
     }
     if (input.substr(0, 4) == "sqrt") {
 
       if (tokens.size() != 2) {
-        std::cout << "Usage: sqrt <number>\n";
+        outstream << "Usage: sqrt <number>\n";
         continue;
       }
       std::string ans = arithmetica::square_root(tokens[1], accuracy);
-      std::cout << "==> " << ans << "\n";
+      outstream << "==> " << ans << "\n";
     }
     if (input == "numericeval") {
       numeric_eval = !numeric_eval;
-      std::cout << "numeric evaluation is now "
+      outstream << "numeric evaluation is now "
                 << (numeric_eval ? "enabled" : "disabled") << "\n";
     }
     if (input == "verboseeval") {
       verbose_eval = !verbose_eval;
-      std::cout << "verbose evaluation is now "
+      outstream << "verbose evaluation is now "
                 << (verbose_eval ? "enabled" : "disabled") << "\n";
     }
     if (input == "fractionseval") {
       enable_fractions_eval = !enable_fractions_eval;
-      std::cout << "fractions are now "
+      outstream << "fractions are now "
                 << (enable_fractions_eval ? "displayed" : "not disabled")
                 << " in eval\n";
       continue;
@@ -496,12 +500,12 @@ int arithmetica_tui(int argc, char **argv) {
           "Example usage: arctan 1 ==> 45\u00b0 = 0.785398 rad"};
 
       if (tokens.size() == 1) {
-        std::cout << "Example usage: " << example_usages[is_acos + 2 * is_atan]
+        outstream << "Example usage: " << example_usages[is_acos + 2 * is_atan]
                   << "\n";
         continue;
       }
       std::string num = tokens[1];
-      std::cout << " ==> " << functions[is_acos + 2 * is_atan] << "(" << num
+      outstream << " ==> " << functions[is_acos + 2 * is_atan] << "(" << num
                 << ") = ";
       std::string answer;
 
@@ -514,7 +518,7 @@ int arithmetica_tui(int argc, char **argv) {
       }
 
       std::string rad_ans = round_decimal(answer, accuracy);
-      std::cout << round_decimal(
+      outstream << round_decimal(
                        basic_math_operations::multiply(
                            basic_math_operations::multiply(answer, "180"),
                            inverse_pi.substr(0, 6 + accuracy)),
@@ -532,12 +536,12 @@ int arithmetica_tui(int argc, char **argv) {
           "sin 30 ==> 0.5", "cos 60 ==> 0.5", "tan 45 ==> 1"};
 
       if (tokens.size() == 1) {
-        std::cout << "Example usage: " << example_usages[is_cos + is_tan * 2]
+        outstream << "Example usage: " << example_usages[is_cos + is_tan * 2]
                   << ", assuming that degree mode is enabled\n";
         continue;
       }
       std::string num = tokens[1];
-      std::cout << " ==> " << function_names[is_cos + is_tan * 2] << "(" << num
+      outstream << " ==> " << function_names[is_cos + is_tan * 2] << "(" << num
                 << (degree_mode ? "\u00b0" : " rad") << ") = ";
       if (degree_mode) {
         num = basic_math_operations::divide(
@@ -554,35 +558,35 @@ int arithmetica_tui(int argc, char **argv) {
         answer = arithmetica::sine(num, accuracy + 3);
       }
 
-      std::cout << round_decimal(answer, accuracy) << "\n";
+      outstream << round_decimal(answer, accuracy) << "\n";
     }
     if (input.substr(0, 8) == "accuracy") {
 
       if (tokens.size() == 1) {
-        std::cout << "accuracy is currently " << accuracy << "\n";
+        outstream << "accuracy is currently " << accuracy << "\n";
         continue;
       }
       std::string &num = tokens[1];
       if (num.length() > 18) {
-        std::cout << "Number too large\n";
+        outstream << "Number too large\n";
         continue;
       }
       if (num[0] == '-') {
-        std::cout << "Number must be positive\n";
+        outstream << "Number must be positive\n";
         continue;
       }
       try {
         accuracy = std::stoull(num);
       } catch (std::invalid_argument &e) {
-        std::cout << "Invalid number: " << num << "\n";
+        outstream << "Invalid number: " << num << "\n";
         continue;
       }
-      std::cout << "accuracy is now " << accuracy << "\n";
+      outstream << "accuracy is now " << accuracy << "\n";
     }
 
     if (tokenize(input)[0] == "factor" || tokenize(input)[0] == "factorize") {
       if (input.length() < 8) {
-        std::cout << "Example usage: factor x^2+3x+2 => (x+1)(x+2)\n";
+        outstream << "Example usage: factor x^2+3x+2 => (x+1)(x+2)\n";
         continue;
       }
 
@@ -593,32 +597,32 @@ int arithmetica_tui(int argc, char **argv) {
       std::vector<std::string> steps;
       std::string factored = arithmetica_factor_polynomial::factor_polynomial(
           expression, steps, show_steps);
-      std::cout << "\n";
+      outstream << "\n";
       if (factored != "ERROR") {
         steps.push_back(factored);
         for (auto &i : steps) {
           replace_all(i, "+", " + ");
           replace_all(i, "-", " - ");
-          std::cout << "==> " << i << "\n";
+          outstream << "==> " << i << "\n";
         }
       }
-      std::cout << "\n";
+      outstream << "\n";
     }
 
     if (input == "showsteps") {
       show_steps = !show_steps;
-      std::cout << "showsteps is now " << (show_steps ? "true" : "false")
+      outstream << "showsteps is now " << (show_steps ? "true" : "false")
                 << "\n";
     }
     if (input == "degreemode") {
       degree_mode = !degree_mode;
-      std::cout << "degreemode is now "
+      outstream << "degreemode is now "
                 << (degree_mode ? "enabled" : "disabled") << "\n";
     }
     if (input.substr(0, 4) == "eval" || check_for_implicit_eval(input)) {
       tokens = tokenize(input);
       if (input.length() < 6) {
-        std::cout << "Example usage: eval 2+2 => 4\n";
+        outstream << "Example usage: eval 2+2 => 4\n";
         continue;
       }
 
@@ -630,7 +634,7 @@ int arithmetica_tui(int argc, char **argv) {
       if (numeric_eval) {
         std::string ans = arithmetica::simplify_arithmetic_expression(
             expression, 0, accuracy);
-        std::cout << " ==> " << ans << "\n";
+        outstream << " ==> " << ans << "\n";
         continue;
       }
 
@@ -682,12 +686,12 @@ int arithmetica_tui(int argc, char **argv) {
         replace_all(expression, "( - ", "(-");
         replace_all(expression, "^ - ", "^-");
         replace_all(expression, "*", " \u00d7 ");
-        std::cout << "\n";
+        outstream << "\n";
 
         if (verbose_eval) {
-          std::cout << "Task: Simplify " << expression << "\n\n";
+          outstream << "Task: Simplify " << expression << "\n\n";
         } else if (print_original) {
-          std::cout << "==> " << expression << "\n";
+          outstream << "==> " << expression << "\n";
         }
 
         std::string s;
@@ -699,11 +703,11 @@ int arithmetica_tui(int argc, char **argv) {
           // replace_all(i, "*", " \u00d7 ");
           s += i + "\n";
           if (experimental_pretty_fractions_eval) {
-            print_eval_expression(i, 1, 0);
+            print_eval_expression(i, 1, 0, NULL, NULL, outstream);
           }
         }
         if (!experimental_pretty_fractions_eval) {
-          std::cout << s;
+          outstream << s;
         }
         std::string decimal_version =
             arithmetica::simplify_arithmetic_expression(answer_cpp, 0,
@@ -715,27 +719,27 @@ int arithmetica_tui(int argc, char **argv) {
                                                           accuracy)};
           to_print.erase(std::unique(to_print.begin(), to_print.end()),
                          to_print.end());
-          std::cout << "[";
+          outstream << "[";
           for (auto i = 0; i < to_print.size(); ++i) {
             to_print[i].erase(
                 std::remove(to_print[i].begin(), to_print[i].end(), ' '),
                 to_print[i].end());
-            std::cout << to_print[i];
+            outstream << to_print[i];
             if (i != to_print.size() - 1) {
-              std::cout << ", ";
+              outstream << ", ";
             }
           }
-          std::cout << "]\n";
+          outstream << "]\n";
         }
         if (s.length() > 1 && s[s.length() - 2] != '\n') {
-          std::cout << "\n";
+          outstream << "\n";
         }
       }
     }
     if (input.substr(0, 3) == "add") {
       std::vector<std::string> tokens = tokenize(input);
       if (tokens.size() < 3) {
-        std::cout << "Example usage: add 1/2 1/2 => 1\n";
+        outstream << "Example usage: add 1/2 1/2 => 1\n";
         continue;
       }
 
@@ -759,7 +763,7 @@ int arithmetica_tui(int argc, char **argv) {
         replace_all(expr, "+", " + ");
         replace_all(expr, "-", " - ");
 
-        std::cout << "==> " << expr << "\n";
+        outstream << "==> " << expr << "\n";
         continue;
       }
 
@@ -778,7 +782,7 @@ int arithmetica_tui(int argc, char **argv) {
       } else {
         if (tokens[1].find('/') != std::string::npos ||
             tokens[2].find('/') != std::string::npos) {
-          std::cout << "Task:    ";
+          outstream << "Task:    ";
           print_expression({tokens[1], tokens[2]}, {"+", "+"}, 9);
 
           arithmetica::Fraction f_1 = arithmetica::Fraction(tokens[1]);
@@ -788,11 +792,11 @@ int arithmetica_tui(int argc, char **argv) {
           if (f_1.numerator != tokens[1].substr(0, tokens[1].find('/')) ||
               f_2.numerator != tokens[2].substr(0, tokens[2].find('/'))) {
             ++step;
-            std::cout << "\nStep #" << step
+            outstream << "\nStep #" << step
                       << ": Simplify the input fractions\n";
-            std::cout << "    " << tokens[1] << " ==> "
+            outstream << "    " << tokens[1] << " ==> "
                       << arithmetica::to_string(f_1) << "\n";
-            std::cout << "    " << tokens[2] << " ==> "
+            outstream << "    " << tokens[2] << " ==> "
                       << arithmetica::to_string(f_2) << "\n";
             tokens[1] = arithmetica::to_string(f_1);
             tokens[2] = arithmetica::to_string(f_2);
@@ -802,24 +806,24 @@ int arithmetica_tui(int argc, char **argv) {
             std::string lcm =
                 arithmetica::ilcm(f_1.denominator, f_2.denominator);
             ++step;
-            std::cout
+            outstream
                 << "\nStep #" << step
                 << ": Find the lowest common multiple of the denominators.\n";
-            std::cout << "    ==> lcm(" << f_1.denominator << ", "
+            outstream << "    ==> lcm(" << f_1.denominator << ", "
                       << f_2.denominator << ") = " << lcm << "\n";
             ++step;
-            std::cout << "\nStep #" << step
+            outstream << "\nStep #" << step
                       << ": Multiply each of the fractions by their lowest "
                          "common multiple over their denominator.\n";
-            std::cout << "    ";
+            outstream << "    ";
             print_expression({tokens[1], tokens[2]}, {"+", "+"}, 4);
-            std::cout << "==> ";
+            outstream << "==> ";
             std::string lcm_den_1 = divide(lcm, f_1.denominator, 0);
             std::string lcm_den_2 = divide(lcm, f_2.denominator, 0);
             print_expression({lcm_den_1 + "/" + lcm_den_1, tokens[1],
                               lcm_den_2 + "/" + lcm_den_2, tokens[2]},
                              {"x", "+", "x"}, 4);
-            std::cout << "==> ";
+            outstream << "==> ";
             print_expression({multiply(f_1.numerator, lcm_den_1) + "/" +
                                   multiply(f_1.denominator, lcm_den_1),
                               multiply(f_2.numerator, lcm_den_2) + "/" +
@@ -828,10 +832,10 @@ int arithmetica_tui(int argc, char **argv) {
           }
 
           ++step;
-          std::cout << "\nStep #" << step
+          outstream << "\nStep #" << step
                     << ": Since both fractions have the same denominator, we "
                        "can simply add their numerators.\n";
-          std::cout << "==> ";
+          outstream << "==> ";
           print_expression({arithmetica::to_string(f_1 + f_2)}, {""}, 4);
 
           continue;
@@ -844,13 +848,13 @@ int arithmetica_tui(int argc, char **argv) {
           continue;
         }
 
-        std::cout << "Sorry, this isn't supported yet!\n";
+        outstream << "Sorry, this isn't supported yet!\n";
       }
     }
     if (input.substr(0, 3) == "mul") {
       std::vector<std::string> tokens = tokenize(input);
       if (tokens.size() < 3) {
-        std::cout << "Example usage: mul 1/2 1/2 => 1/4\n";
+        outstream << "Example usage: mul 1/2 1/2 => 1/4\n";
         continue;
       }
 
@@ -883,7 +887,7 @@ int arithmetica_tui(int argc, char **argv) {
                      answer.end());
         replace_all(answer, "+", " + ");
         replace_all(answer, "-", " - ");
-        std::cout << "==> " << answer << "\n";
+        outstream << "==> " << answer << "\n";
         continue;
       }
 
@@ -892,12 +896,12 @@ int arithmetica_tui(int argc, char **argv) {
             tokens[2].find('/') == std::string::npos) {
           std::string ans =
               basic_math_operations::multiply(tokens[1], tokens[2]);
-          std::cout << "==> " << ans << "\n";
+          outstream << "==> " << ans << "\n";
         }
       } else {
         if (tokens[1].find('/') != std::string::npos ||
             tokens[2].find('/') != std::string::npos) {
-          std::cout << "Task:    ";
+          outstream << "Task:    ";
           print_expression({tokens[1], tokens[2]}, {"x", "x"}, 9);
 
           arithmetica::Fraction f_1 = arithmetica::Fraction(tokens[1]);
@@ -907,23 +911,23 @@ int arithmetica_tui(int argc, char **argv) {
           if (f_1.numerator != tokens[1].substr(0, tokens[1].find('/')) ||
               f_2.numerator != tokens[2].substr(0, tokens[2].find('/'))) {
             ++step;
-            std::cout << "\nStep #" << step
+            outstream << "\nStep #" << step
                       << ": Simplify the input fractions\n";
-            std::cout << "    " << tokens[1] << " ==> "
+            outstream << "    " << tokens[1] << " ==> "
                       << arithmetica::to_string(f_1) << "\n";
-            std::cout << "    " << tokens[2] << " ==> "
+            outstream << "    " << tokens[2] << " ==> "
                       << arithmetica::to_string(f_2) << "\n";
             tokens[1] = arithmetica::to_string(f_1);
             tokens[2] = arithmetica::to_string(f_2);
           }
 
           ++step;
-          std::cout << "\nStep #" << step
+          outstream << "\nStep #" << step
                     << ": Multiply the numerators and denominators of the "
                        "fractions.\n";
-          std::cout << "    ";
+          outstream << "    ";
           print_expression({tokens[1], tokens[2]}, {"x", "x"}, 4);
-          std::cout << "==> ";
+          outstream << "==> ";
           print_expression({multiply(f_1.numerator, f_2.numerator) + "/" +
                             multiply(f_1.denominator, f_2.denominator)},
                            {""}, 4);
@@ -933,8 +937,8 @@ int arithmetica_tui(int argc, char **argv) {
               result.denominator !=
                   multiply(f_1.denominator, f_2.denominator)) {
             ++step;
-            std::cout << "\nStep #" << step << ": Simplify the result.\n";
-            std::cout << "==> ";
+            outstream << "\nStep #" << step << ": Simplify the result.\n";
+            outstream << "==> ";
             print_expression({arithmetica::to_string(result)}, {""}, 4);
           }
 
@@ -946,7 +950,7 @@ int arithmetica_tui(int argc, char **argv) {
             tokens[2].find('.') == std::string::npos) {
           // If the numbers are 1 digit, the result is trivial
           if (tokens[1].length() == 1 && tokens[2].length() == 1) {
-            std::cout << "==> " << std::stoi(tokens[1]) * std::stoi(tokens[2])
+            outstream << "==> " << std::stoi(tokens[1]) * std::stoi(tokens[2])
                       << "\n";
             continue;
           }
@@ -972,36 +976,36 @@ int arithmetica_tui(int argc, char **argv) {
 
           size_t m = result.length();
 
-          std::cout << std::string(m - l_in.length() + 2, ' ') << l_in << "\n";
-          std::cout << " x" << std::string(m - s_in.length(), ' ') << s_in
+          outstream << std::string(m - l_in.length() + 2, ' ') << l_in << "\n";
+          outstream << " x" << std::string(m - s_in.length(), ' ') << s_in
                     << "\n";
-          std::cout << std::string(m - l_in.length(), ' ')
+          outstream << std::string(m - l_in.length(), ' ')
                     << std::string(l_in.length() + 2, '-') << "\n";
           for (auto i = 0; i < to_add.size(); ++i) {
             std::string print =
                 std::string(m - to_add[i].length() + 2, ' ') + to_add[i];
             if (i != 0)
               print[0] = '+';
-            std::cout << print << "\n";
+            outstream << print << "\n";
           }
-          std::cout << "  " << std::string(result.length(), '-') << "\n";
-          std::cout << "  " << result << "\n";
+          outstream << "  " << std::string(result.length(), '-') << "\n";
+          outstream << "  " << result << "\n";
           continue;
         }
 
-        std::cout << "Sorry, this isn't supported yet!\n";
+        outstream << "Sorry, this isn't supported yet!\n";
       }
     }
     if (input.substr(0, 3) == "div") {
 
       if (tokens.size() < 3) {
-        std::cout << "Invalid input!\n";
+        outstream << "Invalid input!\n";
         continue;
       }
       if (show_steps) {
         divide_with_steps(tokens[1], tokens[2], accuracy);
       } else {
-        std::cout << "==> " << divide(tokens[1], tokens[2], accuracy) << "\n";
+        outstream << "==> " << divide(tokens[1], tokens[2], accuracy) << "\n";
       }
     }
   }

@@ -2,10 +2,13 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 std::string version = "0.4.1";
 std::string autorelease = "0";
 size_t accuracy = 10;
+std::ostream &outstream = std::cout;
+std::istream &instream = std::cin;
 
 std::string pi =
     "3."
