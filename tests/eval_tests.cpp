@@ -16,7 +16,7 @@ TEST(EvalTests, Test2) {
   result = call_arithmetica_tui("eval 120-256+100");
   ASSERT_EQ(result, "arithmetica> eval 120-256+100\\n     \\n-36\\n     \\narithmetica> exit\\n");
   result = call_arithmetica_tui("showsteps\neval 120-256+100");
-  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval 120-256+100\\n\\n==> 120 - 256 + 100\\n==> 120 - 156\\n==> -36\\n\\narithmetica> exit\\n");
+  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval 120-256+100\\n\\n==> 120 - 256 + 100\\n==> 120 - 156\\n==>  - 36\\n\\narithmetica> exit\\n");
 }
 
 TEST(EvalTests, Test3) {
@@ -72,7 +72,7 @@ TEST(EvalTests, Test9) {
   result = call_arithmetica_tui("eval (10-15)^2");
   ASSERT_EQ(result, "arithmetica> eval (10-15)^2\\n    \\n25\\n    \\narithmetica> exit\\n");
   result = call_arithmetica_tui("showsteps\neval (10-15)^2");
-  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval (10-15)^2\\n\\n==> (10 - 15)^2\\n  ==> 10 - 15\\n  ==> -5\\n==> (-5)^2\\n==> 25\\n\\narithmetica> exit\\n");
+  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval (10-15)^2\\n\\n==> (10 - 15)^2\\n  ==> 10 - 15\\n  ==>  - 5\\n==> ( - 5)^2\\n==> 25\\n\\narithmetica> exit\\n");
 }
 
 TEST(EvalTests, Test10) {
@@ -128,13 +128,13 @@ TEST(EvalTests, Test16) {
   result = call_arithmetica_tui("eval -(1)^(1/1)");
   ASSERT_EQ(result, "arithmetica> eval -(1)^(1/1)\\n    \\n-1\\n    \\narithmetica> exit\\n");
   result = call_arithmetica_tui("showsteps\neval -(1)^(1/1)");
-  ASSERT_EQ(result, "this test fails");
+  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval -(1)^(1/1)\\n\\n==>  - (1)^(1/1)\\n      1  \\n  ==> -\\n      1  \\n  ==> 1\\n==>  - (1)^(1)\\n==>  - 1\\n\\narithmetica> exit\\n");
 }
 
-TEST(EvalTests, Test) {
+TEST(EvalTests, Test17) {
   std::string result;
   result = call_arithmetica_tui("eval -1^(1/1)");
   ASSERT_EQ(result, "arithmetica> eval -1^(1/1)\\n    \\n-1\\n    \\narithmetica> exit\\n");
   result = call_arithmetica_tui("showsteps\neval -1^(1/1)");
-  ASSERT_EQ(result, "this test fails"); 
+  ASSERT_EQ(result, "arithmetica> showsteps\\nshowsteps is now true\\narithmetica> eval -1^(1/1)\\n\\n          1   \\n==>  - 1^(-)\\n          1   \\n      1  \\n  ==> -\\n      1  \\n  ==> 1\\n==>  - 1^(1)\\n==>  - 1\\n\\narithmetica> exit\\n"); 
 }

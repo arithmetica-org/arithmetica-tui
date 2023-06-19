@@ -22,48 +22,65 @@ void insert_characters_into_line(std::string &line, std::string chars,
 }
 
 std::string shorten_console_output(std::string str) {
-  std::string answer;
-  std::string current_line;
+  std::vector<std::string> answer = {""};
 
   int cursor_location = 0;
+  size_t line_index = 0;
 
   for (auto &i : str) {
-    if (current_line.length() >= 2 &&
-        current_line.substr(current_line.length() - 2, 2) == "\\r") {
+    if (answer[line_index].length() >= 2 &&
+        answer[line_index].substr(answer[line_index].length() - 2, 2) == "\\r") {
       cursor_location = 0;
-      current_line = current_line.substr(0, current_line.length() - 2);
+      answer[line_index] = answer[line_index].substr(0, answer[line_index].length() - 2);
     }
-    if (current_line.length() >= 7 &&
-        current_line.substr(current_line.length() - 7, 7) == "\\033[2K") {
-      current_line.clear();
+    if (answer[line_index].length() >= 7 &&
+        answer[line_index].substr(answer[line_index].length() - 7, 7) == "\\033[2K") {
+      answer[line_index].clear();
+    }
+    if (answer[line_index].length() >= 6 &&
+        answer[line_index].substr(answer[line_index].length() - 6, 6) == "\\033[A") {
+      answer[line_index] = answer[line_index].substr(0, answer[line_index].length() - 6);
+      if (line_index > 0) {
+        --line_index;
+      }
     }
 
     if (i == '\033') {
-      insert_characters_into_line(current_line, "\\033", cursor_location);
+      insert_characters_into_line(answer[line_index], "\\033", cursor_location);
       continue;
     }
     if (i == '\r') {
-      insert_characters_into_line(current_line, "\\r", cursor_location);
+      insert_characters_into_line(answer[line_index], "\\r", cursor_location);
       continue;
     }
     if (i == '\n') {
-      answer += current_line + "\\n";
-      current_line.clear();
+      if (line_index == answer.size() - 1)
+        answer.push_back("");
       cursor_location = 0;
+      ++line_index;
       continue;
     }
 
-    insert_characters_into_line(current_line, std::string(1, i),
+    insert_characters_into_line(answer[line_index], std::string(1, i),
                                 cursor_location);
   }
 
-  return answer;
+  std::string answer_str;
+  for (size_t i = 0; i < answer.size(); ++i) {
+    answer_str += answer[i];
+    if (i != answer.size() - 1) {
+      answer_str += "\\n";
+    }
+  }
+  return answer_str;
 }
 
-std::string call_arithmetica_tui(std::string command) {
 #ifdef _WIN32
-  return "Not implemented.";
-#else
+#include <io.h>
+#include <fcntl.h>
+#endif
+
+std::string call_arithmetica_tui(std::string command) {
   command += "\nexit\n";
 
   std::stringstream s;
@@ -71,7 +88,11 @@ std::string call_arithmetica_tui(std::string command) {
   std::cout.rdbuf(s.rdbuf());
 
   int pipefd[2];
+#ifdef _WIN32
+  if (_pipe(pipefd, 4096, O_BINARY) == -1) {
+#else
   if (pipe(pipefd) == -1) {
+#endif
     perror("pipe");
     return nullptr;
   }
@@ -103,6 +124,10 @@ std::string call_arithmetica_tui(std::string command) {
 
   std::vector<std::string> argv_vec = {"arithmetica", "--no-introduction"};
 
+#ifdef _WIN32
+  argv_vec.push_back("--reprint-input");
+#endif
+
   std::vector<char *> argv_cstr;
   for (const auto &arg : argv_vec) {
     argv_cstr.push_back(const_cast<char *>(arg.c_str()));
@@ -126,5 +151,4 @@ std::string call_arithmetica_tui(std::string command) {
   test = shorten_console_output(test);
   
   return test;
-#endif
 }

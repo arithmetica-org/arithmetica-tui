@@ -367,6 +367,8 @@ void print_eval_expression(std::string expression, int outputType, int padding,
 
   int bracket_count = 0;
 
+  bool negative_sign_at_index_0 = expression.length() > 0 && expression[0] == '-';
+
   for (size_t i = 0; i < expression.length(); ++i) {
     if (expression[i] == ' ')
       continue;
@@ -388,7 +390,9 @@ void print_eval_expression(std::string expression, int outputType, int padding,
         long operational_sign = eval_with_steps::find_operational_sign(
             expression.c_str(), expression[i]);
         if (operational_sign != i) {
-          continue;
+          if (i != 0) {
+            continue;
+          }
         }
       }
       if (expression[i] == '+') {
@@ -415,7 +419,7 @@ void print_eval_expression(std::string expression, int outputType, int padding,
       free(leftArgument);
       free(rightArgument);
 
-      if (!signs.empty() && signs.back() == "-") {
+      if (((!signs.empty() && !negative_sign_at_index_0) || (negative_sign_at_index_0 && signs.size() > 1)) && signs.back() == "-") {
         left = left.substr(1, left.length());
       }
 
@@ -744,6 +748,7 @@ int arithmetica_tui(int argc, char **argv) {
   }
 
   bool no_introduction = false;
+  bool reprint_input = false;
 
   if (argc >= 2) {
     if (std::string(argv[1]) == "--version") {
@@ -789,6 +794,10 @@ int arithmetica_tui(int argc, char **argv) {
     for (int i = 0; i < argc; i++) {
       if (std::string(argv[i]) == "--no-introduction") {
         no_introduction = true;
+        continue;
+      }
+      if (std::string(argv[i]) == "--reprint-input") {
+        reprint_input = true;
         continue;
       }
       if (std::string(argv[i]) == "-o") {
@@ -948,6 +957,10 @@ int arithmetica_tui(int argc, char **argv) {
     // by default Which is amazing, for once windows is better than linux Thank
     // you Microsoft
     std::getline(std::cin, input);
+
+    if (reprint_input) {
+      std::cout << "\rarithmetica> " << input << "\n";
+    }
 #endif
 
 #ifdef __linux__
