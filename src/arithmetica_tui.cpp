@@ -658,7 +658,7 @@ bool check_for_implicit_eval(std::string &s) {
   // If the input contains only numbers, (), [], {}, +-*/^ and all brackets are correctly opened and closed, automatically eval
   // This is to make it easier for the user to use the program
 
-  std::string allowed = "0123456789.+-*/^()[]{}";
+  std::string allowed = "0123456789.+-*/^()[]{} ";
   for (size_t i = 0; i < s.length(); i++) {
     if (s[i] == '(') {
       // Check that the bracket has a valid closing bracket
