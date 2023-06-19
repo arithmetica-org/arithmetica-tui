@@ -108,22 +108,6 @@ static bool is_letter(char ch) {
   return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z');
 }
 
-size_t get_matching_brace(std::string str, size_t index) {
-  if (str[index] != '(')
-    return -1;
-  int count = 0;
-  for (size_t i = index; i < str.length(); i++) {
-    if (str[i] == '(')
-      count++;
-    if (str[i] == ')')
-      count--;
-
-    if (!count)
-      return i;
-  }
-  return -1;
-}
-
 algnum algnum::operator*(algnum a2) {
   algnum answer;
   answer.constant = constant * a2.constant;

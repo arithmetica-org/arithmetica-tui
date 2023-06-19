@@ -5,6 +5,8 @@
 #include <map>
 #include <vector>
 
+#include <helpers.hpp>
+
 namespace algnum {
 
 typedef arithmetica::Fraction rfraction;
@@ -79,6 +81,4 @@ public:
   bool operator==(variable v2);
   bool operator<(variable v2);
 };
-
-size_t get_matching_brace(std::string str, size_t index);
 } // namespace algnum

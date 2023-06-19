@@ -11,15 +11,35 @@ set(sources
     algnum.cpp
 )
 
+set(helper_sources
+    helpers/center.cpp
+    helpers/check_for_implicit_eval.cpp
+    helpers/compare_printed_text.cpp
+    helpers/compare_text_without_ansi.cpp
+    helpers/get_console_width.cpp
+    helpers/get_matching_brace.cpp
+    helpers/get_printable_result.cpp
+    helpers/getch.cpp
+    helpers/print_eval_expression.cpp
+    helpers/print_expression.cpp
+    helpers/print_result.cpp
+    helpers/remove_extra_front_back_brackets.cpp
+    helpers/replace_all.cpp
+    helpers/round_decimal.cpp
+    helpers/tokenize.cpp)
+
 if (WIN32 OR USE_SUBMODULE_AM_BMO)
     # We'll need to build the library and then link it.
     add_subdirectory(${am_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/libs/arithmetica)
     add_subdirectory(${bmo_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/libs/basic_math_operations)
 endif()
 
-add_library(arithmetica-tui-lib STATIC ${sources})
+add_library(arithmetica-tui-lib STATIC ${sources} ${helper_sources})
 target_link_libraries(arithmetica-tui-lib PRIVATE arithmetica)
 target_link_libraries(arithmetica-tui-lib PRIVATE basic_math_operations)
+
+target_include_directories(arithmetica-tui-lib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/helpers)
+target_include_directories(arithmetica-tui-lib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/functions)
 
 if (BUILD_MAIN_EXECUTABLE)
     add_executable(arithmetica-tui main.cpp)

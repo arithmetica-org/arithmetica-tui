@@ -6,6 +6,8 @@
 #include <cstring>
 #include <iostream>
 
+#include <helpers.hpp>
+
 namespace arithmetica_factor_polynomial {
 typedef arithmetica::Fraction am_frac;
 typedef basic_math_operations::BMONum bmo_num;
@@ -357,8 +359,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
         }
       }
       if (full_step.length() > 2) {
-        if (algnum::get_matching_brace(full_step, 0) ==
-            full_step.length() - 1) {
+        if (get_matching_brace(full_step, 0) == full_step.length() - 1) {
           full_step = full_step.substr(1, full_step.length() - 2);
         }
       }
