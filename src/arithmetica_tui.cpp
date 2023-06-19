@@ -58,11 +58,6 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
 int arithmetica_tui(int argc, char **argv) {
   using namespace basic_math_operations;
   using namespace arithmetica;
-  
-  bool from_file = false;
-  bool to_file = false;
-  std::ifstream input_file;
-  std::ofstream output_file;
 
   std::string printable_version = "arithmetica ";
 
@@ -129,39 +124,10 @@ int arithmetica_tui(int argc, char **argv) {
         reprint_input = true;
         continue;
       }
-      if (std::string(argv[i]) == "-o") {
-        if (argc < i + 1) {
-          std::cout << "Usage: arithmetica -o [file]\n";
-          std::exit(0);
-        }
-
-        to_file = true;
-        std::string filename = argv[i + 1];
-        output_file.open(filename);
-
-        if (!output_file.good()) {
-          std::cerr << "Error: There was a problem opening the file \""
-                    << filename << "\" for writing.\n";
-          std::exit(1);
-        }
-      }
-    }
-    if (std::string(argv[1]) == "-i") {
-      if (argc < 3) {
-        std::cout << "Usage: arithmetica -i [file]\n";
-        std::exit(0);
-      }
-      from_file = true;
-      std::string filename = argv[2];
-      input_file.open(filename);
-      if (!input_file.good()) {
-        std::cerr << "Error: File \"" << filename << "\" not found.\n";
-        std::exit(1);
-      }
     }
   }
 
-  if (argc != 1 && (!from_file) && (!no_introduction)) {
+  if (argc != 1 && (!no_introduction)) {
     std::cout << "Usage: arithmetica [--version] [--get-tag] [--update] "
                  "[--update-bleeding-edge] [-i] [-o]\n";
     std::exit(0);
@@ -202,17 +168,6 @@ int arithmetica_tui(int argc, char **argv) {
     std::string input;
     size_t input_index = 0;
     std::cout << "arithmetica> ";
-
-    if (from_file) {
-      if (input_file.eof()) {
-        break;
-      }
-
-      std::getline(input_file, input);
-      std::cout << input << "\n";
-
-      goto after_input;
-    }
 
     char c;
 #ifdef __linux__
@@ -308,8 +263,6 @@ int arithmetica_tui(int argc, char **argv) {
 #ifdef __linux__
     std::cout << "\n";
 #endif
-
-  after_input:
 
     // remove front and back whitespace
     input.erase(0, input.find_first_not_of(' '));
@@ -510,9 +463,6 @@ int arithmetica_tui(int argc, char **argv) {
         continue;
       }
       std::string ans = arithmetica::square_root(tokens[1], accuracy);
-      if (to_file) {
-        output_file << ans << "\n";
-      }
       std::cout << "==> " << ans << "\n";
     }
     if (input == "numericeval") {
@@ -564,9 +514,6 @@ int arithmetica_tui(int argc, char **argv) {
       }
 
       std::string rad_ans = round_decimal(answer, accuracy);
-      if (to_file) {
-        output_file << rad_ans << "\n";
-      }
       std::cout << round_decimal(
                        basic_math_operations::multiply(
                            basic_math_operations::multiply(answer, "180"),
@@ -646,9 +593,6 @@ int arithmetica_tui(int argc, char **argv) {
       std::vector<std::string> steps;
       std::string factored = arithmetica_factor_polynomial::factor_polynomial(
           expression, steps, show_steps);
-      if (to_file) {
-        output_file << factored << "\n";
-      }
       std::cout << "\n";
       if (factored != "ERROR") {
         steps.push_back(factored);
@@ -686,9 +630,6 @@ int arithmetica_tui(int argc, char **argv) {
       if (numeric_eval) {
         std::string ans = arithmetica::simplify_arithmetic_expression(
             expression, 0, accuracy);
-        if (to_file) {
-          output_file << ans << "\n";
-        }
         std::cout << " ==> " << ans << "\n";
         continue;
       }
@@ -706,16 +647,6 @@ int arithmetica_tui(int argc, char **argv) {
         // remove duplicates from to_print
         to_print.erase(std::unique(to_print.begin(), to_print.end()),
                        to_print.end());
-        if (to_file) {
-          std::string s;
-          for (auto &i : to_print) {
-            s += i + ", ";
-          }
-          if (s.length() > 2) {
-            s = s.substr(0, s.length() - 2);
-          }
-          output_file << s << "\n";
-        }
         print_expression(to_print,
                          std::vector<std::string>(to_print.size() - 1, "="), 0);
       } else {
@@ -952,9 +883,6 @@ int arithmetica_tui(int argc, char **argv) {
                      answer.end());
         replace_all(answer, "+", " + ");
         replace_all(answer, "-", " - ");
-        if (to_file) {
-          output_file << answer << "\n";
-        }
         std::cout << "==> " << answer << "\n";
         continue;
       }
@@ -965,9 +893,6 @@ int arithmetica_tui(int argc, char **argv) {
           std::string ans =
               basic_math_operations::multiply(tokens[1], tokens[2]);
           std::cout << "==> " << ans << "\n";
-          if (to_file) {
-            output_file << ans << "\n";
-          }
         }
       } else {
         if (tokens[1].find('/') != std::string::npos ||
@@ -1079,13 +1004,6 @@ int arithmetica_tui(int argc, char **argv) {
         std::cout << "==> " << divide(tokens[1], tokens[2], accuracy) << "\n";
       }
     }
-  }
-
-  if (from_file) {
-    input_file.close();
-  }
-  if (to_file) {
-    output_file.close();
   }
 
   return 0;
