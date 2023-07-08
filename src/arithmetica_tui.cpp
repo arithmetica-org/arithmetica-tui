@@ -57,7 +57,7 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
 
 int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                     std::ostream &outstream_) {
-  using namespace basic_math_operations;
+  using namespace basic_math_operations;  
   using namespace arithmetica;
 
   auto original_cout = outstream.rdbuf();
