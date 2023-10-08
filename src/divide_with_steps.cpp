@@ -22,8 +22,7 @@ void divide_with_steps(const std::string &dividend_,
 
   std::string quotient;
 
-  std::vector<std::string> multiplication_table;
-  multiplication_table.reserve(10);
+  std::vector<std::string> multiplication_table(10);
   for (char i = '0'; i <= '9'; ++i) {
     multiplication_table[i - '0'] = multiply(divisor, std::string(1, i));
   }
