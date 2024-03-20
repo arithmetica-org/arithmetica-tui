@@ -633,6 +633,24 @@ algnum::algnum(const char *s) {
   variables = newVariables;
 }
 
+bool algnum::is_constant() {
+  for (auto &i : variables) {
+    if (!i.constant) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool algexpr::is_constant() {
+  for (auto &i : expr) {
+    if (!i.is_constant()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 std::string algnum::latex() {
   if (constant.numerator == "0")
     return "0";
@@ -765,15 +783,33 @@ size_t get_matching_open_brace(std::string str, size_t index) {
   return -1;
 }
 
+std::string algnum::to_string() {
+  std::string ans;
+  if (constant.numerator == "0") {
+    ans += std::string("0");
+    return ans;
+  }
+  // if (n.variables.empty()) {
+    rfraction m = constant;
+    ans += m.to_string();
+  // }
+  for (auto i = 0; i < variables.size(); i++) {
+    ans += "(" + variables[i].var + ")";
+    ans += std::string("^");
+    ans += std::string("(") + variables[i].power.to_string() + std::string(")");
+  }
+  return ans;
+}
+
 std::ostream &operator<<(std::ostream &os, const algnum n) {
   if (n.constant.numerator == "0") {
     os << std::string("0");
     return os;
   }
-  if (n.variables.empty()) {
+  // if (n.variables.empty()) {
     rfraction m = n.constant;
     os << m.to_string();
-  }
+  // }
   if (n.constant.numerator != n.constant.denominator) {
     if (!n.variables.empty())
       os << std::string(" ");
@@ -918,6 +954,31 @@ void algexpr::clean_double_signs(std::string &expression) {
   replace_all(expression, "*+", "*");
   replace_all(expression, "/+", "/");
 };
+
+std::string algexpr::to_string() {
+  std::string temp;
+  std::string ans;
+  if (expr.empty())
+    return ans;
+  for (auto i = 0; i < expr.size(); i++) {
+    if (expr[i].constant.numerator[0] != '-')
+      ans += expr[i].to_string();
+    else {
+      algnum n1;
+      n1.constant = expr[i].constant.numerator.substr(
+          1, expr[i].constant.numerator.length());
+      n1.variables = expr[i].variables;
+      ans += n1.to_string();
+    }
+    if (i + 1 < expr.size()) {
+      if (expr[i + 1].constant.numerator[0] != '-')
+        ans += std::string("+");
+      else
+        ans += std::string("-");
+    }
+  }
+  return ans;
+}
 
 std::ostream &operator<<(std::ostream &os, const algexpr n) {
   std::string temp;

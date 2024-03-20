@@ -37,8 +37,8 @@ void print_eval_expression(std::string expression, int outputType, int padding,
                            std::vector<std::string> *outTerms = NULL,
                            std::vector<std::string> *outSigns = NULL,
                            std::ostream &outstream = std::cout);
-std::vector<std::string> tokenize(std::string s);
-bool check_for_implicit_eval(std::string &s);
+std::vector<std::string> tokenize(std::string s, char ch = ' ');
+bool is_valid_arithmetic_expression(const std::string &s);
 
 #ifdef __linux__
 char getch(std::istream &instream);

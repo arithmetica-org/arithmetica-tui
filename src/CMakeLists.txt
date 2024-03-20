@@ -13,13 +13,13 @@ set(sources
 
 set(helper_sources
     helpers/center.cpp
-    helpers/check_for_implicit_eval.cpp
     helpers/compare_printed_text.cpp
     helpers/compare_text_without_ansi.cpp
     helpers/get_console_width.cpp
     helpers/get_matching_brace.cpp
     helpers/get_printable_result.cpp
     helpers/getch.cpp
+    helpers/is_valid_arithmetic_expression.cpp
     helpers/print_eval_expression.cpp
     helpers/print_expression.cpp
     helpers/print_result.cpp

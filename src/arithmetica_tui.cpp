@@ -5,12 +5,19 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <unistd.h>
 #include <vector>
 
 #include "constants.hpp"
 #include <functions.hpp>
 #include <helpers.hpp>
+
+std::string remove_spaces(std::string s) {
+  std::string ans = s;
+  replace_all(ans, " ", "");
+  return ans;
+}
 
 void print_add_whole_steps(std::string l_in, std::string s_in) {
   if (l_in.length() < s_in.length())
@@ -55,6 +62,40 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
+std::string funcsub(std::map<std::string, algnum::algexpr> &user_defined_funcs, std::string func_name, std::vector<std::string> &orig_vals, std::vector<std::string> &new_vals) {
+  // If the function exists in the map
+  std::string s;
+  if (user_defined_funcs.find(func_name) != user_defined_funcs.end()) {
+    s = user_defined_funcs[func_name].to_string();
+  } else {
+    s = algnum::algexpr(func_name.c_str()).to_string();
+  }
+  size_t num_vars = orig_vals.size();
+  for (size_t i = 0; i < num_vars; ++ i) {
+    replace_all(s, "(" + orig_vals[i] + ")", "(" + new_vals[i] + ")");
+  }
+  // Since my algebraic parser is .. not that great, it doesn't really support evaluating normal arithmetic expressions.
+  // So we'll add a check to see if our expression does not have any variables anymore.
+  // If so, we'll use the much better arithmetic expression parser, otherwise, we'll settle
+  // with the broken algebraic parser.
+  if (is_valid_arithmetic_expression(s)) {
+    return arithmetica::simplify_arithmetic_expression(s, 1, accuracy);
+  } else {
+    algnum::algexpr e(s.c_str());
+    std::stringstream ss;
+    ss << e;
+    return ss.str();
+  }
+}
+
+bool check_for_implicit_eval(std::string &s) {
+  if (is_valid_arithmetic_expression(s)) {
+    s = "eval " + s;
+    return true;
+  }
+  return false;
+}
+
 int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                     std::ostream &outstream_) {
   using namespace basic_math_operations;  
@@ -90,6 +131,8 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
   bool verbose_eval = false;
   bool numeric_eval = false;
   bool experimental_pretty_fractions_eval = true;
+
+  std::map<std::string, algnum::algexpr> user_defined_funcs;
 
   if (argc >= 2) {
     if (std::string(argv[1]) == "--version") {
@@ -304,6 +347,10 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                      "divisor of the given numbers\n";
         outstream << "lcm <number> <number> ... - computes the least common "
                      "multiple of the given numbers\n";
+        outstream << "funcadd <name> <algexpr> - add a function to the function list, see funclist\n";
+        outstream << "funclist - list all added functions\n";
+        outstream << "subt [function_name/algexpr], var1=new1, var2=new2 - substitute variables in functions/algebraic with constant values\n";
+
         outstream
             << "\nFor help with a specific function, type help <function>\n\n";
         outstream << "Options:\n";
@@ -1009,6 +1056,47 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       } else {
         outstream << "==> " << divide(tokens[1], tokens[2], accuracy) << "\n";
       }
+    }
+  
+    if (tokens[0] == "funcadd") {
+      // funcadd [name] [algexpr]
+      if (tokens.size() < 3) {
+        std::cout << "Syntax: funcadd [name] [algexpr]\n";
+        continue;
+      }
+      algnum::algexpr e(tokens[2].c_str());
+      user_defined_funcs[tokens[1]] = e;
+    }
+
+    if (tokens[0] == "funclist") {
+      for (auto &i : user_defined_funcs) {
+        std::cout << i.first << ": " << i.second << "\n";
+      }
+    }
+  
+    if (tokens[0] == "subt") {
+      // subt [algexpr/function name], var1=newval, var2=newval, ...
+      bool bad = false;
+      if (tokens.size() < 2) {
+        bad = true;
+      }
+      std::vector<std::string> orig_vals, new_vals;
+      input = input.substr(5);
+      std::vector<std::string> tokens = tokenize(input, ',');
+      for (size_t i = 1; i < tokens.size(); ++i) {
+        std::vector<std::string> tk = tokenize(tokens[i], '=');
+        if (tk.size() != 2) {
+          bad = true;
+          break;
+        }
+        orig_vals.push_back(remove_spaces(tk[0]));
+        new_vals.push_back(remove_spaces(tk[1]));
+      }
+      if (bad) {
+        std::cout << "Syntax: subt [algexpr/function name], var1=newval, var2=newval, ...\n";
+        continue;
+      }
+      std::cout << "==> " << funcsub(user_defined_funcs, remove_spaces(tokens[0]), orig_vals, new_vals) << "\n";
     }
   }
 

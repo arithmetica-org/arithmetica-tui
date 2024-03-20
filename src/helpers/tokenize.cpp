@@ -1,7 +1,7 @@
 #include "helpers.hpp"
 
-std::vector<std::string> tokenize(std::string s) {
-  // Tokenize on the character ' ', essentially splitting the string into its
+std::vector<std::string> tokenize(std::string s, char ch) {
+  // Tokenize on the character ch, essentially splitting the string into its
   // individual words
   // Also don't split on spaces inside of parentheses
 
@@ -27,7 +27,7 @@ std::vector<std::string> tokenize(std::string s) {
       continue;
     }
 
-    if (s[i] == ' ') {
+    if (s[i] == ch) {
       tokens.push_back(token);
       token.clear();
       continue;

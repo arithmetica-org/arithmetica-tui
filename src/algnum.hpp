@@ -27,6 +27,9 @@ public:
   std::string latex();
   algnum(const char *s);
   algnum() {}
+  bool is_constant();
+
+  std::string to_string();
 
   algnum operator+(algnum a2);
   algnum operator*(algnum a2);
@@ -49,8 +52,10 @@ public:
   algnum element(size_t index);
   size_t size();
   void insert(algnum n);
+  bool is_constant();
 
   algexpr combine_like_terms(algexpr e);
+  std::string to_string();
 
   algexpr operator+(algexpr e2);
   algexpr operator*(algexpr e2);
