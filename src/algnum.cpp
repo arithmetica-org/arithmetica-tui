@@ -2,12 +2,12 @@
 
 namespace algnum {
     
-algnum algexpr::element(size_t index) { return expr[index]; }
-size_t algexpr::size() { return expr.size(); }
+algnum algexpr::element(size_t index) const { return expr[index]; }
+size_t algexpr::size() const { return expr.size(); }
 void algexpr::insert(algnum n) { expr.push_back(n); }
 
-bool variable::operator==(variable v2) { return var == v2.var && power == v2.power; }
-bool variable::operator<(variable v2) { return var < v2.var; }
+bool variable::operator==(const variable &v2) const { return var == v2.var && power == v2.power; }
+bool variable::operator<(const variable &v2) const { return var < v2.var; }
 
 std::string rfrac_to_latex(rfraction frac) {
   if (frac.denominator != "1")
@@ -56,7 +56,7 @@ void algexpr::operator=(rfraction r) {
   expr.push_back(algnum(r.to_string().c_str()));
 }
 
-bool algnum::operator==(algnum a2) {
+bool algnum::operator==(algnum a2) const {
   if (!(constant == a2.constant))
     return false;
   if (variables.size() != a2.variables.size())
@@ -68,7 +68,7 @@ bool algnum::operator==(algnum a2) {
   return true;
 }
 
-bool algexpr::operator==(algexpr e2) {
+bool algexpr::operator==(algexpr e2) const {
   if (size() != e2.size())
     return false;
   for (size_t i = 0; i < size(); i++) {

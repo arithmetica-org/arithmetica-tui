@@ -62,7 +62,9 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
-std::string funcsub(std::map<std::string, algnum::algexpr> &user_defined_funcs, std::string func_name, std::vector<std::string> &orig_vals, std::vector<std::string> &new_vals) {
+std::string funcsub(std::map<std::string, algnum::algexpr> &user_defined_funcs,
+                    std::string func_name, std::vector<std::string> &orig_vals,
+                    std::vector<std::string> &new_vals) {
   // If the function exists in the map
   std::string s;
   if (user_defined_funcs.find(func_name) != user_defined_funcs.end()) {
@@ -71,13 +73,14 @@ std::string funcsub(std::map<std::string, algnum::algexpr> &user_defined_funcs, 
     s = algnum::algexpr(func_name.c_str()).to_string();
   }
   size_t num_vars = orig_vals.size();
-  for (size_t i = 0; i < num_vars; ++ i) {
+  for (size_t i = 0; i < num_vars; ++i) {
     replace_all(s, "(" + orig_vals[i] + ")", "(" + new_vals[i] + ")");
   }
-  // Since my algebraic parser is .. not that great, it doesn't really support evaluating normal arithmetic expressions.
-  // So we'll add a check to see if our expression does not have any variables anymore.
-  // If so, we'll use the much better arithmetic expression parser, otherwise, we'll settle
-  // with the broken algebraic parser.
+  // Since my algebraic parser is .. not that great, it doesn't really support
+  // evaluating normal arithmetic expressions. So we'll add a check to see if
+  // our expression does not have any variables anymore. If so, we'll use the
+  // much better arithmetic expression parser, otherwise, we'll settle with the
+  // broken algebraic parser.
   if (is_valid_arithmetic_expression(s)) {
     return arithmetica::simplify_arithmetic_expression(s, 1, accuracy);
   } else {
@@ -98,7 +101,7 @@ bool check_for_implicit_eval(std::string &s) {
 
 int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                     std::ostream &outstream_) {
-  using namespace basic_math_operations;  
+  using namespace basic_math_operations;
   using namespace arithmetica;
 
   auto original_cout = outstream.rdbuf();
@@ -150,7 +153,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
 
     if (std::string(argv[1]) == "--update-bleeding-edge") {
       std::string command;
-#ifdef __linux__
+#if defined(__linux__) || defined(__MACH__)
       command = "curl -s -H \"Accept: application/vnd.github.v3.raw\" "
                 "https://api.github.com/repos/arithmetica-org/arithmetica-tui/"
                 "contents/install_bleeding_edge.sh | sudo bash &";
@@ -219,7 +222,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
     outstream << "arithmetica> ";
 
     char c;
-#ifdef __linux__
+#if defined(__linux__) || defined(__MACH__)
     while ((c = getch(instream)) != '\n') {
       if (c == 27) { // Escape character (arrow key)
         c = getch(instream);
@@ -297,7 +300,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
     }
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__MACH__)
     // Don't add consecutive duplicates or empty strings to history
     if (input.empty() ||
         (history.size() >= 2 && history[history.size() - 2] == input)) {
@@ -309,7 +312,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
     history_index = history.size() - 1;
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__MACH__)
     outstream << "\n";
 #endif
 
@@ -347,9 +350,12 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                      "divisor of the given numbers\n";
         outstream << "lcm <number> <number> ... - computes the least common "
                      "multiple of the given numbers\n";
-        outstream << "funcadd <name> <algexpr> - add a function to the function list, see funclist\n";
+        outstream << "funcadd <name> <algexpr> - add a function to the "
+                     "function list, see funclist\n";
         outstream << "funclist - list all added functions\n";
-        outstream << "subt [function_name/algexpr], var1=new1, var2=new2 - substitute variables in functions/algebraic with constant values\n";
+        outstream << "subt [function_name/algexpr], var1=new1, var2=new2 - "
+                     "substitute variables in functions/algebraic with "
+                     "constant values\n";
 
         outstream
             << "\nFor help with a specific function, type help <function>\n\n";
@@ -1057,7 +1063,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         outstream << "==> " << divide(tokens[1], tokens[2], accuracy) << "\n";
       }
     }
-  
+
     if (tokens[0] == "funcadd") {
       // funcadd [name] [algexpr]
       if (tokens.size() < 3) {
@@ -1073,7 +1079,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         std::cout << i.first << ": " << i.second << "\n";
       }
     }
-  
+
     if (tokens[0] == "subt") {
       // subt [algexpr/function name], var1=newval, var2=newval, ...
       bool bad = false;
@@ -1093,10 +1099,14 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         new_vals.push_back(remove_spaces(tk[1]));
       }
       if (bad) {
-        std::cout << "Syntax: subt [algexpr/function name], var1=newval, var2=newval, ...\n";
+        std::cout << "Syntax: subt [algexpr/function name], var1=newval, "
+                     "var2=newval, ...\n";
         continue;
       }
-      std::cout << "==> " << funcsub(user_defined_funcs, remove_spaces(tokens[0]), orig_vals, new_vals) << "\n";
+      std::cout << "==> "
+                << funcsub(user_defined_funcs, remove_spaces(tokens[0]),
+                           orig_vals, new_vals)
+                << "\n";
     }
   }
 

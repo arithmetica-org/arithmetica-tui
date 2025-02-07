@@ -1,7 +1,7 @@
 #include "helpers.hpp"
 
 int get_console_width() {
-#ifdef __linux__
+#if defined(__linux__) || defined(__MACH__)
   int ans = 20;
   struct winsize w;
   memset(&w, 0, sizeof(w));

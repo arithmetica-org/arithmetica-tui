@@ -9,7 +9,7 @@
 #include <string>
 #include <unistd.h>
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__MACH__)
 #include <sys/ioctl.h>
 #include <termios.h>
 #endif
@@ -40,6 +40,6 @@ void print_eval_expression(std::string expression, int outputType, int padding,
 std::vector<std::string> tokenize(std::string s, char ch = ' ');
 bool is_valid_arithmetic_expression(const std::string &s);
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__MACH__)
 char getch(std::istream &instream);
 #endif

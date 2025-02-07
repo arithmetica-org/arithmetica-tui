@@ -46,8 +46,10 @@ if (BUILD_MAIN_EXECUTABLE)
     add_executable(arithmetica-tui main.cpp)
     target_link_libraries(arithmetica-tui PRIVATE arithmetica-tui-lib)
     if (BUILD_RELEASE)
+    if (NOT APPLE)
         # Add '-static -static-libstdc++ -static-libgcc' compiler flags
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static -static-libstdc++ -static-libgcc")
+    endif()
     endif()
     
     # Add an icon if we're on Windows

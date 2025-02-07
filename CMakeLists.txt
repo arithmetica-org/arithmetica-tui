@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.0)
 
 project(arithmetica-tui)
 
+enable_language(CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 option(BUILD_RELEASE "Build for a GitHub release" ON)
 option(BUILD_MAIN_EXECUTABLE "Build the main executable" ON)
 option(USE_SUBMODULE_AM_BMO "Fetch arithmetica and basic_math_operations using FetchContent" ON)

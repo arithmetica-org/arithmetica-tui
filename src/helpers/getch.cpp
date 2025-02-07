@@ -1,7 +1,7 @@
 #include "helpers.hpp"
 
 // Get a single character from the console without echo or buffering
-#ifdef __linux__
+#if defined(__linux__) || defined(__MACH__)
 char getch(std::istream &instream) {
   struct termios oldt, newt;
   memset(&oldt, 0, sizeof(oldt));

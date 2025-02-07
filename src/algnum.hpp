@@ -34,7 +34,7 @@ public:
   algnum operator+(algnum a2);
   algnum operator*(algnum a2);
   friend std::ostream &operator<<(std::ostream &os, const algnum n);
-  bool operator==(algnum a2);
+  bool operator==(algnum a2) const;
 };
 
 class algexpr {
@@ -49,8 +49,8 @@ public:
 
   std::string latex();
 
-  algnum element(size_t index);
-  size_t size();
+  algnum element(size_t index) const;
+  size_t size() const;
   void insert(algnum n);
   bool is_constant();
 
@@ -61,7 +61,7 @@ public:
   algexpr operator*(algexpr e2);
 
   friend std::ostream &operator<<(std::ostream &os, const algexpr n);
-  bool operator==(algexpr e2);
+  bool operator==(algexpr e2) const;
   void operator=(rfraction r);
   void operator=(std::string s);
   void operator=(const char *cstr);
@@ -83,7 +83,7 @@ public:
 
   variable() {}
 
-  bool operator==(variable v2);
-  bool operator<(variable v2);
+  bool operator==(const variable &v2) const;
+  bool operator<(const variable &v2) const;
 };
 } // namespace algnum
