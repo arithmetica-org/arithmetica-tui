@@ -56,6 +56,14 @@ Arithmetica can also evaluate expressions:
   <img width="790" height="190" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/5fc0e511-7869-4329-9462-5de9e73b8921'>
 </div>
 
+## Find the inverse of matrices
+Arithmetica can find matrix inverses
+
+<div align='center'>
+  <img width="587" alt="image" src="https://github.com/user-attachments/assets/0e9115a6-f424-4939-8045-1ae664120fc8" />
+</div>
+
+
 ## Add / Multiply with steps
 And if you ever need to add or multiply something 'by hand' again, arithmetica can help with that too!
 
@@ -64,7 +72,7 @@ And if you ever need to add or multiply something 'by hand' again, arithmetica c
   <img width="auto" height="200" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/ffed3e6a-d253-445b-b35f-5b6046512f08'>
 </div>
 
-<div align='rught'>
+<div align='left'>
   <img width="auto" height="180" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/5a5f56fa-ff49-468c-983a-98395bbdf84e'>
   <img width="auto" height="180" src='https://github.com/avighnac/arithmetica-tui/assets/74564976/2ea3fcc6-4e03-4ca6-82b2-9637bebe893c'>
 </div>
