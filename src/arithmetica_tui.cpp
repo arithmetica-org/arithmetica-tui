@@ -586,6 +586,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
           tokens[1].back() != ')') {
         outstream
             << "Usage: invertmatrix [matrix elements, in {{},{}} format]\n";
+        continue;
       }
       std::string str = tokens[1];
       std::vector<std::vector<Fraction>> a;

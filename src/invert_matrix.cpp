@@ -13,9 +13,22 @@ invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
   }
 
   for (int s = 0; s < a.size(); ++s) {
-    if (a[s][s] == "0") {
+    int nonzero_idx = a.size();
+    for (int i = s; i < a.size(); ++i) {
+      if (!(a[i][s] == "0")) {
+        nonzero_idx = i;
+        break;
+      }
+    }
+    if (nonzero_idx == a.size()) {
       possible = false;
       return ans;
+    }
+    if (nonzero_idx != s) {
+      for (int i = 0; i < a.size(); ++i) {
+        a[s][i] = a[s][i] + a[nonzero_idx][i];
+        ans[s][i] = ans[s][i] + ans[nonzero_idx][i];
+      }
     }
     for (int i = s + 1; i < a.size(); ++i) {
       auto k = a[i][s] / a[s][s];
@@ -32,6 +45,23 @@ invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
       for (int j = 0; j < a.size(); ++j) {
         a[s][j] = a[s][j] - k * a[i][j];
         ans[s][j] = ans[s][j] - k * ans[i][j];
+      }
+    }
+    int nonzero_idx = a.size();
+    for (int i = s; i < a.size(); ++i) {
+      if (!(a[i][s] == "0")) {
+        nonzero_idx = i;
+        break;
+      }
+    }
+    if (nonzero_idx == a.size()) {
+      possible = false;
+      return ans;
+    }
+    if (nonzero_idx != s) {
+      for (int i = 0; i < a.size(); ++i) {
+        a[s][i] = a[s][i] + a[nonzero_idx][i];
+        ans[s][i] = ans[s][i] + ans[nonzero_idx][i];
       }
     }
     auto k = a[s][s];
