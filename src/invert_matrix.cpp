@@ -1,6 +1,5 @@
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
-#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,11 +12,10 @@ invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
     ans[i][i] = "1";
   }
 
-  std::function<void(int)> invert;
-  invert = [&](int s) {
+  for (int s = 0; s < a.size(); ++s) {
     if (a[s][s] == "0") {
       possible = false;
-      a[s][s] = "1";
+      return ans;
     }
     for (int i = s + 1; i < a.size(); ++i) {
       auto k = a[i][s] / a[s][s];
@@ -26,9 +24,9 @@ invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
         ans[i][j] = ans[i][j] - k * ans[s][j];
       }
     }
-    if (s != a.size() - 1) {
-      invert(s + 1);
-    }
+  }
+
+  for (int s = a.size() - 1; s >= 0; --s) {
     for (int i = s + 1; i < a.size(); ++i) {
       auto k = a[s][i];
       for (int j = 0; j < a.size(); ++j) {
@@ -39,14 +37,13 @@ invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
     auto k = a[s][s];
     if (k == "0") {
       possible = false;
-      k = "1";
+      return ans;
     }
     for (int i = 0; i < a.size(); ++i) {
       a[s][i] = a[s][i] / k;
       ans[s][i] = ans[s][i] / k;
     }
-  };
+  }
 
-  invert(0);
   return ans;
 }
