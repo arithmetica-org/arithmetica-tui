@@ -1,5 +1,6 @@
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -7,8 +8,6 @@
 std::vector<std::vector<arithmetica::Fraction>>
 invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
               bool &possible) {
-  // Assume a nonempty square matrix
-
   std::vector ans(a.size(), std::vector<arithmetica::Fraction>(a.size(), "0"));
   for (int i = 0; i < a.size(); ++i) {
     ans[i][i] = "1";
@@ -16,6 +15,10 @@ invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
 
   std::function<void(int)> invert;
   invert = [&](int s) {
+    if (a[s][s] == "0") {
+      possible = false;
+      a[s][s] = "1";
+    }
     for (int i = s + 1; i < a.size(); ++i) {
       auto k = a[i][s] / a[s][s];
       for (int j = 0; j < a.size(); ++j) {

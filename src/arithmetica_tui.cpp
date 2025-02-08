@@ -103,6 +103,56 @@ std::vector<std::vector<arithmetica::Fraction>>
 invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
               bool &possible);
 
+std::string
+prettify_matrix(std::vector<std::vector<arithmetica::Fraction>> table) {
+  if (table.empty())
+    return "";
+
+  // get the max lengths of each row
+  std::vector<size_t> max_len;
+  for (size_t i = 0; i < table[0].size(); i++) {
+    max_len.push_back(0);
+    for (size_t j = 0; j < table.size(); j++)
+      max_len[i] = std::max(max_len[i], table[j][i].to_string().length());
+  }
+
+  // start making table
+  std::string bar = "┌-";
+  for (auto &i : max_len)
+    bar += std::string(i + 2, ' ') + " ";
+  bar.pop_back();
+  bar.pop_back();
+  bar.pop_back();
+  bar += "-┐";
+  std::string answer = bar;
+  for (size_t i = 0; i < table.size(); i++) {
+    answer += "\n|";
+    for (size_t j = 0; j < table[i].size(); j++) {
+      answer += " " + table[i][j].to_string();
+      if (max_len[j] - table[i][j].to_string().length() > 0) {
+        answer +=
+            std::string(max_len[j] - table[i][j].to_string().length(), ' ');
+      }
+      answer += " ";
+      if (j != table[i].size() - 1) {
+        answer += " ";
+      } else {
+        answer += "|";
+      }
+    }
+  }
+  std::string bottom_bar = "└-";
+  for (auto &i : max_len)
+    bottom_bar += std::string(i + 2, ' ') + " ";
+  bottom_bar.pop_back();
+  bottom_bar.pop_back();
+  bottom_bar.pop_back();
+  bottom_bar += "-┘";
+  answer += "\n" + bottom_bar;
+
+  return answer;
+}
+
 int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                     std::ostream &outstream_) {
   using namespace basic_math_operations;
@@ -576,20 +626,23 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                      "inverted.\n";
         continue;
       }
-      std::cout << "{\n";
+      std::cout << '\n' << prettify_matrix(ans) << "\n\n";
+      std::cout << "{";
       for (int i = 0; i < a.size(); ++i) {
-        std::cout << "  {";
+        std::cout << "{";
         for (int j = 0; j < a.size(); ++j) {
           std::cout << ans[i][j].to_string();
           if (j != a.size() - 1) {
-            std::cout << ",\t";
+            std::cout << ", ";
           }
         }
         std::cout << "}";
         if (i != a.size() - 1) {
           std::cout << ",";
         }
-        std::cout << '\n';
+        if (i != a.size() - 1) {
+          std::cout << ' ';
+        }
       }
       std::cout << "}\n";
     }
