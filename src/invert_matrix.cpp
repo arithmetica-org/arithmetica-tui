@@ -65,10 +65,6 @@ invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
       }
     }
     auto k = a[s][s];
-    if (k == "0") {
-      possible = false;
-      return ans;
-    }
     for (int i = 0; i < a.size(); ++i) {
       a[s][i] = a[s][i] / k;
       ans[s][i] = ans[s][i] / k;
