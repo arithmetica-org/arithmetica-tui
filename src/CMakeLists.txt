@@ -9,6 +9,7 @@ set(sources
     eval_with_steps.cpp
     divide_with_steps.cpp
     algnum.cpp
+    invert_matrix.cpp
 )
 
 set(helper_sources

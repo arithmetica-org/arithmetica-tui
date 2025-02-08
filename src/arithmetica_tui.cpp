@@ -99,6 +99,10 @@ bool check_for_implicit_eval(std::string &s) {
   return false;
 }
 
+std::vector<std::vector<arithmetica::Fraction>>
+invert_matrix(std::vector<std::vector<arithmetica::Fraction>> a,
+              bool &possible);
+
 int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                     std::ostream &outstream_) {
   using namespace basic_math_operations;
@@ -356,6 +360,9 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         outstream << "subt [function_name/algexpr], var1=new1, var2=new2 - "
                      "substitute variables in functions/algebraic with "
                      "constant values\n";
+        outstream << "invertmatrix [matrix elements, in {{},{}} format] - "
+                     "inverts an n-by-n "
+                     "matrix\n";
 
         outstream
             << "\nFor help with a specific function, type help <function>\n\n";
@@ -523,6 +530,68 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       }
       std::string ans = arithmetica::square_root(tokens[1], accuracy);
       outstream << "==> " << ans << "\n";
+    }
+    if (tokens[0] == "invertmatrix") {
+      if (tokens.size() != 2 or tokens[1][0] != '(' or
+          tokens[1].back() != ')') {
+        outstream
+            << "Usage: invertmatrix [matrix elements, in {{},{}} format]\n";
+      }
+      std::string str = tokens[1];
+      std::vector<std::vector<Fraction>> a;
+      str = str.substr(1, str.length() - 2);
+      std::string cur;
+      for (int i = 0, bal = 0; i < str.length(); ++i) {
+        bal += str[i] == '(';
+        bal -= str[i] == ')';
+        if (bal == 1 and str[i] == '(') {
+          cur.clear();
+          continue;
+        }
+        if (bal == 0 and str[i] == ')') {
+          auto t = tokenize(cur, ',');
+          std::vector<Fraction> v;
+          for (auto &i : t) {
+            v.emplace_back(i);
+          }
+          a.push_back(v);
+          continue;
+        }
+        cur.push_back(str[i]);
+      }
+      bool is_square_matrix = true;
+      for (int i = 0; i < a.size(); ++i) {
+        if (a[i].size() != a.size()) {
+          is_square_matrix = false;
+        }
+      }
+      if (!is_square_matrix) {
+        std::cout << "A non-square matrix cannot be inverted.\n";
+        continue;
+      }
+      bool possible = true;
+      auto ans = invert_matrix(a, possible);
+      if (!possible) {
+        std::cout << "Matrix rows are linearly dependent: matrix cannot be "
+                     "inverted.\n";
+        continue;
+      }
+      std::cout << "{\n";
+      for (int i = 0; i < a.size(); ++i) {
+        std::cout << "  {";
+        for (int j = 0; j < a.size(); ++j) {
+          std::cout << ans[i][j].to_string();
+          if (j != a.size() - 1) {
+            std::cout << ",\t";
+          }
+        }
+        std::cout << "}";
+        if (i != a.size() - 1) {
+          std::cout << ",";
+        }
+        std::cout << '\n';
+      }
+      std::cout << "}\n";
     }
     if (input == "numericeval") {
       numeric_eval = !numeric_eval;
