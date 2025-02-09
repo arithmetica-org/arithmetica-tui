@@ -153,6 +153,57 @@ prettify_matrix(std::vector<std::vector<arithmetica::Fraction>> table) {
   return answer;
 }
 
+std::vector<std::vector<arithmetica::Fraction>> parse_matrix(std::string str) {
+  std::vector<std::vector<arithmetica::Fraction>> a;
+  str = str.substr(1, str.length() - 2);
+  std::string cur;
+  for (int i = 0, bal = 0; i < str.length(); ++i) {
+    bal += str[i] == '(';
+    bal -= str[i] == ')';
+    if (bal == 1 and str[i] == '(') {
+      cur.clear();
+      continue;
+    }
+    if (bal == 0 and str[i] == ')') {
+      auto t = tokenize(cur, ',');
+      std::vector<arithmetica::Fraction> v;
+      for (auto &i : t) {
+        v.emplace_back(i);
+      }
+      a.push_back(v);
+      continue;
+    }
+    cur.push_back(str[i]);
+  }
+  return a;
+}
+
+std::string matrix_to_line(std::vector<std::vector<arithmetica::Fraction>> a) {
+  std::string ans = "{";
+  for (int i = 0; i < a.size(); ++i) {
+    ans += "{";
+    for (int j = 0; j < a[i].size(); ++j) {
+      ans += a[i][j].to_string();
+      if (j != a[i].size() - 1) {
+        ans += ", ";
+      }
+    }
+    ans += "}";
+    if (i != a.size() - 1) {
+      ans += ",";
+    }
+    if (i != a.size() - 1) {
+      ans += " ";
+    }
+  }
+  ans += "}";
+  return ans;
+}
+
+std::vector<std::vector<arithmetica::Fraction>>
+matmul(std::vector<std::vector<arithmetica::Fraction>> &a,
+       std::vector<std::vector<arithmetica::Fraction>> &b);
+
 int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                     std::ostream &outstream_) {
   using namespace basic_math_operations;
@@ -413,6 +464,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         outstream << "invertmatrix [matrix elements, in {{},{}} format] - "
                      "inverts an n-by-n "
                      "matrix\n";
+        outstream << "matmul [matrix1] [matrix2] - multiply two matrices\n";
 
         outstream
             << "\nFor help with a specific function, type help <function>\n\n";
@@ -588,28 +640,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
             << "Usage: invertmatrix [matrix elements, in {{},{}} format]\n";
         continue;
       }
-      std::string str = tokens[1];
-      std::vector<std::vector<Fraction>> a;
-      str = str.substr(1, str.length() - 2);
-      std::string cur;
-      for (int i = 0, bal = 0; i < str.length(); ++i) {
-        bal += str[i] == '(';
-        bal -= str[i] == ')';
-        if (bal == 1 and str[i] == '(') {
-          cur.clear();
-          continue;
-        }
-        if (bal == 0 and str[i] == ')') {
-          auto t = tokenize(cur, ',');
-          std::vector<Fraction> v;
-          for (auto &i : t) {
-            v.emplace_back(i);
-          }
-          a.push_back(v);
-          continue;
-        }
-        cur.push_back(str[i]);
-      }
+      auto a = parse_matrix(tokens[1]);
       bool is_square_matrix = true;
       for (int i = 0; i < a.size(); ++i) {
         if (a[i].size() != a.size()) {
@@ -628,24 +659,18 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         continue;
       }
       std::cout << '\n' << prettify_matrix(ans) << "\n\n";
-      std::cout << "{";
-      for (int i = 0; i < a.size(); ++i) {
-        std::cout << "{";
-        for (int j = 0; j < a.size(); ++j) {
-          std::cout << ans[i][j].to_string();
-          if (j != a.size() - 1) {
-            std::cout << ", ";
-          }
-        }
-        std::cout << "}";
-        if (i != a.size() - 1) {
-          std::cout << ",";
-        }
-        if (i != a.size() - 1) {
-          std::cout << ' ';
-        }
+      std::cout << matrix_to_line(ans) << "\n";
+    }
+    if (tokens[0] == "matmul") {
+      if (tokens.size() != 3) {
+        std::cout << "Usage: matmul [matrix1] [matrix2]\n";
+        continue;
       }
-      std::cout << "}\n";
+      auto a = parse_matrix(tokens[1]);
+      auto b = parse_matrix(tokens[2]);
+      auto ans = matmul(a, b);
+      std::cout << '\n' << prettify_matrix(ans) << "\n\n";
+      std::cout << matrix_to_line(ans) << "\n";
     }
     if (input == "numericeval") {
       numeric_eval = !numeric_eval;
