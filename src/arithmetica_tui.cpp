@@ -668,6 +668,10 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       }
       auto a = parse_matrix(tokens[1]);
       auto b = parse_matrix(tokens[2]);
+      if (a[0].size() != b.size()) {
+        std::cout << "The dimensions don't match: can't mutliply!\n";
+        continue;
+      }
       auto ans = matmul(a, b);
       std::cout << '\n' << prettify_matrix(ans) << "\n\n";
       std::cout << matrix_to_line(ans) << "\n";
