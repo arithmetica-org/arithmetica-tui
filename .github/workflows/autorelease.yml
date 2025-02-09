@@ -21,7 +21,7 @@ jobs:
         echo $AUTORELEASE_NO
         sed -i "s/std::string autorelease = \".*\";/std::string autorelease = \"${AUTORELEASE_NO}\";/" src/arithmetica_tui.cpp
     - name: Upload arithmetica_tui.cpp
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: arithmetica-tui-cpp
         path: src/arithmetica_tui.cpp
@@ -35,7 +35,7 @@ jobs:
     - name: Remove arithmetica_tui.cpp
       run: rm src/arithmetica_tui.cpp
     - name: Download arithmetica_tui.cpp
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: arithmetica-tui-cpp
     - name: Move arithmetica_tui.cpp to src
@@ -56,7 +56,7 @@ jobs:
         cmake --no-warn-unused-cli -DBUILD_MAIN_EXECUTABLE=ON -DARITHMETICA_TUI_TESTS=OFF -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Release -S . -B build -G "Unix Makefiles"
         cmake --build build --config Release --target all -j 10 --
     - name: Upload executable asset for Linux
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: arithmetica-executable-linux
         path: build/src/arithmetica
@@ -70,7 +70,7 @@ jobs:
     - name: Remove arithmetica_tui.cpp
       run: rm src/arithmetica_tui.cpp
     - name: Download arithmetica_tui.cpp
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: arithmetica-tui-cpp
     - name: Move arithmetica_tui.cpp to src
@@ -84,7 +84,7 @@ jobs:
         cmake --no-warn-unused-cli -DBUILD_MAIN_EXECUTABLE=ON -DBUILD_RELEASE=ON -DARITHMETICA_TUI_TESTS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -S. -B build -G "MinGW Makefiles"
         cmake --build build --config Release --target all -j 10
     - name: Upload executable asset for Windows
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: arithmetica-executable-windows
         path: build/src/arithmetica.exe
@@ -98,11 +98,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Download arithmetica executable for Linux
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: arithmetica-executable-linux
     - name: Download arithmetica executable for Windows
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: arithmetica-executable-windows
     - name: Set necessary variables
