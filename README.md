@@ -24,6 +24,7 @@ curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/
 | Factorization | Factorize any single variable polynomial. |
 | Evaluation | Evaluate any arithmetic expression. |
 | Matrix Inversion | Find the inverse of a matrix. |
+| Solve Linear Systems | Solve any system of linear simultaneous equations. |
 | Addition | Add two numbers. |
 | Multiplication | Multiply two numbers. | 
 | Division | Divide two numbers. | 
