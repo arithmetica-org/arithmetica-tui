@@ -1,12 +1,14 @@
 #include "algnum.hpp"
 
 namespace algnum {
-    
+
 algnum algexpr::element(size_t index) const { return expr[index]; }
 size_t algexpr::size() const { return expr.size(); }
 void algexpr::insert(algnum n) { expr.push_back(n); }
 
-bool variable::operator==(const variable &v2) const { return var == v2.var && power == v2.power; }
+bool variable::operator==(const variable &v2) const {
+  return var == v2.var && power == v2.power;
+}
 bool variable::operator<(const variable &v2) const { return var < v2.var; }
 
 std::string rfrac_to_latex(rfraction frac) {
@@ -506,13 +508,14 @@ algnum::algnum(const char *s) {
               // keep going ahead till a non-numerical character is
               // encountered
               varname = in.substr(i, 2);
-              for (auto j = subscript_location + 1; j < in.length(); j++) {
+              size_t j = subscript_location + 1;
+              for (; j < in.length(); j++) {
                 if (!('0' <= in[j] && in[j] <= '9')) {
-                  i = j;
                   break;
                 }
                 varname.push_back(in[j]);
               }
+              i = j;
             }
           }
         } else {
@@ -790,8 +793,8 @@ std::string algnum::to_string() {
     return ans;
   }
   // if (n.variables.empty()) {
-    rfraction m = constant;
-    ans += m.to_string();
+  rfraction m = constant;
+  ans += m.to_string();
   // }
   for (auto i = 0; i < variables.size(); i++) {
     ans += "(" + variables[i].var + ")";
@@ -807,8 +810,8 @@ std::ostream &operator<<(std::ostream &os, const algnum n) {
     return os;
   }
   // if (n.variables.empty()) {
-    rfraction m = n.constant;
-    os << m.to_string();
+  rfraction m = n.constant;
+  os << m.to_string();
   // }
   if (n.constant.numerator != n.constant.denominator) {
     if (!n.variables.empty())
@@ -924,7 +927,6 @@ algexpr::algexpr(const char *s) {
   auto supportedFunctions = get_supported_functions();
   remove_all_non_functional_brackets(input, supportedFunctions);
 
-  
   while (input.find(" - ") != std::string::npos) {
     replace_all(input, " - ", "-");
   }
@@ -1003,4 +1005,4 @@ std::ostream &operator<<(std::ostream &os, const algexpr n) {
   }
   return os;
 }
-}
+} // namespace algnum

@@ -5,6 +5,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <unistd.h>
 #include <vector>
@@ -465,6 +466,8 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                      "inverts an n-by-n "
                      "matrix\n";
         outstream << "matmul [matrix1] [matrix2] - multiply two matrices\n";
+        outstream << "solve [eq_1,eq_2,...,eq_n] - solves a system of "
+                     "simultaneous linear equations\n";
 
         outstream
             << "\nFor help with a specific function, type help <function>\n\n";
@@ -675,6 +678,61 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       auto ans = matmul(a, b);
       std::cout << '\n' << prettify_matrix(ans) << "\n\n";
       std::cout << matrix_to_line(ans) << "\n";
+    }
+    if (tokens[0] == "solve") {
+      std::vector<algnum::algexpr> eqs;
+      std::set<std::string> _vars;
+      for (auto &e : tokenize(input.substr(5, input.length()), ',')) {
+        auto parts = tokenize(e, '=');
+        algnum::algexpr lhs(parts[0].c_str()), rhs(parts[1].c_str());
+        eqs.push_back(lhs + rhs * "-1");
+        for (int i = 0; i < eqs.back().size(); ++i) {
+          if (eqs.back().expr[i].variables.size() > 0) {
+            auto var = eqs.back().expr[i];
+            var.constant = "1";
+            _vars.insert(var.latex());
+          }
+        }
+      }
+      std::map<std::string, int> vars;
+      auto it1 = _vars.begin();
+      for (int i = 0; it1 != _vars.end(); ++i, ++it1) {
+        vars[*it1] = i;
+      }
+      std::vector mat(vars.size(), std::vector<Fraction>(vars.size(), "0"));
+      std::vector<std::vector<Fraction>> consts;
+      for (int i = 0; i < eqs.size(); ++i) {
+        auto eq = eqs[i];
+        bool done = false;
+        for (int j = 0; j < eq.size(); ++j) {
+          auto var = eq.expr[j];
+          auto frac = var.constant;
+          var.constant = "1";
+          std::string v_str = var.latex();
+          if (vars.find(v_str) != vars.end()) {
+            mat[i][vars[v_str]] = frac;
+          } else {
+            done = true;
+            std::vector<Fraction> v = {frac * "-1"};
+            consts.push_back(v);
+          }
+        }
+        if (!done) {
+          std::vector<Fraction> v = {Fraction("0")};
+          consts.push_back(v);
+        }
+      }
+      bool possible = true;
+      auto mat_inv = invert_matrix(mat, possible);
+      auto sol = matmul(mat_inv, consts);
+      auto it = vars.begin();
+      for (int i = 0; it != vars.end(); ++it, ++i) {
+        std::cout << it->first << " = " << sol[i][0].to_string();
+        if (i != sol.size() - 1) {
+          std::cout << ", ";
+        }
+      }
+      std::cout << '\n';
     }
     if (input == "numericeval") {
       numeric_eval = !numeric_eval;
