@@ -4,6 +4,7 @@
 #include <basic_math_operations.hpp>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <set>
 #include <sstream>
@@ -329,6 +330,31 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
 
     char c;
 #if defined(__linux__) || defined(__MACH__)
+
+    auto clear_lines = [&]() {
+      size_t w = get_console_width();
+      size_t num_lines =
+          (std::string("arithmetica> ").length() + input.length() + w - 1) / w;
+      std::string ans;
+      for (size_t i = 0; i < num_lines; ++i) {
+        ans += "\33[2K\r";
+        if (i != num_lines - 1) {
+          ans += "\033[A";
+        }
+      }
+      return ans;
+    };
+    auto print_w_cursor_loc = [&]() {
+      size_t w = get_console_width();
+      size_t num_lines =
+          (std::string("arithmetica> ").length() + input.length() + w - 1) / w;
+      std::string ans;
+      for (int i = 0; i < int(num_lines) - 1; ++i) {
+        ans += "\033[A";
+      }
+      return ans;
+    };
+
     while ((c = getch(instream)) != '\n') {
       if (c == 27) { // Escape character (arrow key)
         c = getch(instream);
@@ -340,28 +366,33 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
             }
             input = history[history_index];
             input_index = input.length();
-            outstream << "\33[2K\rarithmetica> " << input;
+            outstream << clear_lines() << "arithmetica> " << input;
           } else if (c == 66) { // Down arrow
             if (history_index < history.size() - 1) {
               history_index++;
             }
             input = history[history_index];
             input_index = input.length();
-            outstream << "\33[2K\rarithmetica> " << input;
+            outstream << clear_lines() << "arithmetica> " << input;
           } else if (c == 67) { // Right arrow
             if (input_index < input.length()) {
               input_index++;
-              outstream << "\rarithmetica> " << input.substr(0, input_index);
+              outstream << clear_lines() << "arithmetica> " << input
+                        << print_w_cursor_loc() << "\rarithmetica> "
+                        << input.substr(0, input_index);
             }
           } else if (c == 68) { // Left arrow
             if (input_index != 0) {
               input_index--;
-              outstream << "\rarithmetica> " << input.substr(0, input_index);
+              outstream << clear_lines() << "arithmetica> " << input
+                        << print_w_cursor_loc() << "\rarithmetica> "
+                        << input.substr(0, input_index);
             }
           }
         }
       } else if (c == 127 || c == 8 || c == 27) { // Backspace/delete/delete key
         if (input_index != 0) {
+          outstream << clear_lines();
           if (c == 127 || c == 8) { // Backspace
             // Remove the character behind [input_index]
             input.erase(input_index - 1, 1);
@@ -370,27 +401,21 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
             // Remove the character in front of [input_index]
             input.erase(input_index, 1);
           }
-          for (size_t i = 0; i < (input.length() + 13) / get_console_width();
-               ++i) {
-            outstream << "\33[2K\r\033[A";
-          }
-          outstream << "\33[2K\rarithmetica> " << input;
-          outstream << "\rarithmetica> " << input.substr(0, input_index);
+          outstream << "arithmetica> " << input << print_w_cursor_loc()
+                    << "\rarithmetica> " << input.substr(0, input_index);
         }
       } else {
+        outstream << clear_lines();
         // Add the character to the string in front of [input_index]
-        if (input_index == input.length() - 1) {
+        if (input_index == input.length()) {
           input.push_back(c);
         } else {
           input.insert(input_index, 1, c);
         }
         input_index++;
-        for (size_t i = 0; i < (input.length() + 11) / get_console_width();
-             ++i) {
-          outstream << "\33[2K\r\033[A";
-        }
-        outstream << "\33[2K\rarithmetica> " << input;
-        outstream << "\rarithmetica> " << input.substr(0, input_index);
+
+        outstream << "arithmetica> " << input << print_w_cursor_loc()
+                  << "\rarithmetica> " << input.substr(0, input_index);
       }
     }
 #endif
