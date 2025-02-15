@@ -724,6 +724,10 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       }
       bool possible = true;
       auto mat_inv = invert_matrix(mat, possible);
+      if (!possible) {
+        std::cout << "The system cannot be solved!\n";
+        continue;
+      }
       auto sol = matmul(mat_inv, consts);
       auto it = vars.begin();
       for (int i = 0; it != vars.end(); ++it, ++i) {
