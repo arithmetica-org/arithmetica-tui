@@ -724,6 +724,13 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       for (int i = 0; it1 != _vars.end(); ++i, ++it1) {
         vars[*it1] = i;
       }
+      if (eqs.size() != vars.size()) {
+        std::cout << "Cannot solve system: there are an unequal number of "
+                     "equations and variables ("
+                  << eqs.size() << " equations, " << vars.size()
+                  << " variables)\n";
+        continue;
+      }
       std::vector mat(vars.size(), std::vector<Fraction>(vars.size(), "0"));
       std::vector<std::vector<Fraction>> consts;
       for (int i = 0; i < eqs.size(); ++i) {
