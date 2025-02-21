@@ -1,4 +1,3 @@
-#include "algnum.hpp"
 #include <algorithm>
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
@@ -64,15 +63,16 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps);
 };
 
-std::string funcsub(std::map<std::string, algnum::algexpr> &user_defined_funcs,
-                    std::string func_name, std::vector<std::string> &orig_vals,
-                    std::vector<std::string> &new_vals) {
+std::string
+funcsub(std::map<std::string, arithmetica::algexpr> &user_defined_funcs,
+        std::string func_name, std::vector<std::string> &orig_vals,
+        std::vector<std::string> &new_vals) {
   // If the function exists in the map
   std::string s;
   if (user_defined_funcs.find(func_name) != user_defined_funcs.end()) {
     s = user_defined_funcs[func_name].to_string();
   } else {
-    s = algnum::algexpr(func_name.c_str()).to_string();
+    s = arithmetica::algexpr(func_name).to_string();
   }
   size_t num_vars = orig_vals.size();
   for (size_t i = 0; i < num_vars; ++i) {
@@ -86,16 +86,60 @@ std::string funcsub(std::map<std::string, algnum::algexpr> &user_defined_funcs,
   if (is_valid_arithmetic_expression(s)) {
     return arithmetica::simplify_arithmetic_expression(s, 1, accuracy);
   } else {
-    algnum::algexpr e(s.c_str());
-    std::stringstream ss;
-    ss << e;
-    return ss.str();
+    arithmetica::algexpr(s).to_string();
   }
 }
 
 bool check_for_implicit_eval(std::string &s) {
   if (is_valid_arithmetic_expression(s)) {
     s = "eval " + s;
+    return true;
+  }
+  return false;
+}
+
+bool check_for_implicit_simplify(std::string &s) {
+  std::vector<std::string> funcs = {"help",
+                                    "quickstart",
+                                    "eval",
+                                    "add",
+                                    "mul",
+                                    "factor",
+                                    "sin",
+                                    "cos",
+                                    "tan",
+                                    "asin",
+                                    "acos",
+                                    "atan",
+                                    "sqrt",
+                                    "exp",
+                                    "log",
+                                    "fact",
+                                    "tocontfrac",
+                                    "gcd",
+                                    "lcm",
+                                    "funcadd",
+                                    "funclist",
+                                    "subt",
+                                    "invertmatrix",
+                                    "matmum",
+                                    "solve",
+                                    "showsteps",
+                                    "degreemode",
+                                    "fractionseval",
+                                    "verboseeval",
+                                    "numericeval",
+                                    "experimentalprettyfractionseval",
+                                    "accuracy",
+                                    "simplify",
+                                    "diff"};
+  for (auto &i : funcs) {
+    if (s.find(i) == 0) {
+      return false;
+    }
+  }
+  if (is_valid_arithmetic_expression(s, true)) {
+    s = "simplify " + s;
     return true;
   }
   return false;
@@ -202,10 +246,6 @@ std::string matrix_to_line(std::vector<std::vector<arithmetica::Fraction>> a) {
   return ans;
 }
 
-std::vector<std::vector<arithmetica::Fraction>>
-matmul(std::vector<std::vector<arithmetica::Fraction>> &a,
-       std::vector<std::vector<arithmetica::Fraction>> &b);
-
 int arithmetica_tui(int argc, char **argv, std::istream &instream_,
                     std::ostream &outstream_) {
   using namespace basic_math_operations;
@@ -242,7 +282,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
   bool numeric_eval = false;
   bool experimental_pretty_fractions_eval = true;
 
-  std::map<std::string, algnum::algexpr> user_defined_funcs;
+  std::map<std::string, arithmetica::algexpr> user_defined_funcs;
 
   if (argc >= 2) {
     if (std::string(argv[1]) == "--version") {
@@ -493,6 +533,9 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         outstream << "matmul [matrix1] [matrix2] - multiply two matrices\n";
         outstream << "solve [eq_1,eq_2,...,eq_n] - solves a system of "
                      "simultaneous linear equations\n";
+        outstream << "simplify [algexpr] - simplifies [algexpr] symbolically\n";
+        outstream << "diff [algexpr] [variable] - differentiates [algexpr] wrt "
+                     "[variable] (is x by default)";
 
         outstream
             << "\nFor help with a specific function, type help <function>\n\n";
@@ -679,43 +722,59 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         std::cout << "A non-square matrix cannot be inverted.\n";
         continue;
       }
-      bool possible = true;
-      auto ans = invert_matrix(a, possible);
-      if (!possible) {
+      arithmetica::Matrix mat(a);
+      mat.invert();
+      if (!mat.invertible()) {
         std::cout << "Matrix rows are linearly dependent: matrix cannot be "
                      "inverted.\n";
         continue;
       }
-      std::cout << '\n' << prettify_matrix(ans) << "\n\n";
-      std::cout << matrix_to_line(ans) << "\n";
+      auto ans = mat.inverse();
+      std::cout << '\n' << prettify_matrix(ans.m) << "\n\n";
+      std::cout << ans.to_string() << "\n";
     }
     if (tokens[0] == "matmul") {
       if (tokens.size() != 3) {
         std::cout << "Usage: matmul [matrix1] [matrix2]\n";
         continue;
       }
-      auto a = parse_matrix(tokens[1]);
-      auto b = parse_matrix(tokens[2]);
-      if (a[0].size() != b.size()) {
+      auto _a = arithmetica::Matrix(parse_matrix(tokens[1]));
+      auto _b = arithmetica::Matrix(parse_matrix(tokens[2]));
+      auto _ans = _a * _b;
+      if (!_ans) {
         std::cout << "The dimensions don't match: can't mutliply!\n";
         continue;
       }
-      auto ans = matmul(a, b);
+      auto ans = (*_ans).m;
       std::cout << '\n' << prettify_matrix(ans) << "\n\n";
       std::cout << matrix_to_line(ans) << "\n";
     }
+    if (tokens[0] == "diff") {
+      if (tokens.size() == 2) {
+        tokens.push_back("x"); // by default lets assume we differentiate wrt x
+      }
+      if (tokens.size() != 3) {
+        std::cout << "Example: diff x^2 x ==> 2x\n";
+        continue;
+      }
+      std::cout << "==> "
+                << arithmetica::diff(arithmetica::algexpr(tokens[1]).simplify(),
+                                     arithmetica::algexpr(tokens[2]).simplify())
+                       .to_string()
+                << '\n';
+    }
     if (tokens[0] == "solve") {
-      std::vector<algnum::algexpr> eqs;
+      std::vector<arithmetica::algexpr> eqs;
       std::set<std::string> _vars;
       for (auto &e : tokenize(input.substr(5, input.length()), ',')) {
         auto parts = tokenize(e, '=');
-        algnum::algexpr lhs(parts[0].c_str()), rhs(parts[1].c_str());
-        eqs.push_back(lhs + rhs * "-1");
-        for (int i = 0; i < eqs.back().size(); ++i) {
-          if (eqs.back().expr[i].variables.size() > 0) {
-            auto var = eqs.back().expr[i];
-            var.constant = "1";
-            _vars.insert(var.latex());
+        arithmetica::algexpr lhs(parts[0]), rhs(parts[1]);
+        eqs.push_back((lhs + rhs * arithmetica::algexpr("-1")).simplify());
+        auto terms = eqs.back().terms();
+        for (int i = 0; i < terms.size(); ++i) {
+          terms[i] = terms[i].simplify_term();
+          if (!terms[i].is_numeric()) {
+            _vars.insert(terms[i].r->to_string());
           }
         }
       }
@@ -734,13 +793,13 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       std::vector mat(vars.size(), std::vector<Fraction>(vars.size(), "0"));
       std::vector<std::vector<Fraction>> consts;
       for (int i = 0; i < eqs.size(); ++i) {
-        auto eq = eqs[i];
+        auto terms = eqs[i].terms();
         bool done = false;
-        for (int j = 0; j < eq.size(); ++j) {
-          auto var = eq.expr[j];
-          auto frac = var.constant;
-          var.constant = "1";
-          std::string v_str = var.latex();
+        for (int j = 0; j < terms.size(); ++j) {
+          terms[j] = terms[j].simplify_term();
+          auto var = *terms[j].r;
+          auto frac = terms[j].l->coeff;
+          std::string v_str = var.to_string();
           if (vars.find(v_str) != vars.end()) {
             mat[i][vars[v_str]] = frac;
           } else {
@@ -755,12 +814,20 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         }
       }
       bool possible = true;
-      auto mat_inv = invert_matrix(mat, possible);
-      if (!possible) {
+      arithmetica::Matrix m(mat);
+      m.invert();
+      if (!m.invertible()) {
         std::cout << "The system cannot be solved!\n";
         continue;
       }
-      auto sol = matmul(mat_inv, consts);
+      arithmetica::Matrix _mat_inv = m.inverse();
+      arithmetica::Matrix _consts(consts);
+      auto _sol = _mat_inv * _consts;
+      if (!_sol) {
+        std::cout << "Something went wrong multiplying matrices wtf\n";
+        continue;
+      }
+      auto sol = (*_sol).m;
       auto it = vars.begin();
       for (int i = 0; it != vars.end(); ++it, ++i) {
         std::cout << it->first << " = " << sol[i][0].to_string();
@@ -920,6 +987,22 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       outstream << "degreemode is now "
                 << (degree_mode ? "enabled" : "disabled") << "\n";
     }
+    if (input.substr(0, 7) == "simplify" ||
+        check_for_implicit_simplify(input)) {
+      tokens = tokenize(input);
+      if (input.length() < 9) {
+        outstream << "Example usage: simplify (x+1)(x+2) ==> x^2 + 3x + 2\n";
+        continue;
+      }
+
+      std::string expression = tokens[1];
+      for (auto i = 2; i < tokens.size(); ++i) {
+        expression += tokens[i];
+      }
+      std::cout << "==> "
+                << arithmetica::algexpr(expression).simplify().to_string()
+                << '\n';
+    }
     if (input.substr(0, 4) == "eval" || check_for_implicit_eval(input)) {
       tokens = tokenize(input);
       if (input.length() < 6) {
@@ -935,7 +1018,7 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
       if (numeric_eval) {
         std::string ans = arithmetica::simplify_arithmetic_expression(
             expression, 0, accuracy);
-        outstream << " ==> " << ans << "\n";
+        outstream << "==> " << ans << "\n";
         continue;
       }
 
@@ -1054,16 +1137,9 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
           tokens[2].find_first_of(
               "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") !=
               std::string::npos) {
-        algnum::algexpr a = algnum::algexpr(tokens[1].c_str());
-        algnum::algexpr b = algnum::algexpr(tokens[2].c_str());
-
-        std::string expr = (a + b).latex();
-        // Remove spaces
-        expr.erase(std::remove(expr.begin(), expr.end(), ' '), expr.end());
-        // Add spaces around operators
-        replace_all(expr, "+", " + ");
-        replace_all(expr, "-", " - ");
-
+        arithmetica::algexpr a(tokens[1]);
+        arithmetica::algexpr b(tokens[2]);
+        std::string expr = (a + b).simplify().to_string();
         outstream << "==> " << expr << "\n";
         continue;
       }
@@ -1180,14 +1256,9 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
           tokens[2].find_first_of(
               "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") !=
               std::string::npos) {
-        algnum::algexpr expr_1 = algnum::algexpr(tokens[1].c_str());
-        algnum::algexpr expr_2 = algnum::algexpr(tokens[2].c_str());
-        std::string answer = (expr_1 * expr_2).latex();
-        // Remove all spaces from the answer
-        answer.erase(std::remove(answer.begin(), answer.end(), ' '),
-                     answer.end());
-        replace_all(answer, "+", " + ");
-        replace_all(answer, "-", " - ");
+        arithmetica::algexpr expr_1 = arithmetica::algexpr(tokens[1]);
+        arithmetica::algexpr expr_2 = arithmetica::algexpr(tokens[2]);
+        std::string answer = (expr_1 * expr_2).multiply().to_string();
         outstream << "==> " << answer << "\n";
         continue;
       }
@@ -1316,13 +1387,13 @@ int arithmetica_tui(int argc, char **argv, std::istream &instream_,
         std::cout << "Syntax: funcadd [name] [algexpr]\n";
         continue;
       }
-      algnum::algexpr e(tokens[2].c_str());
+      arithmetica::algexpr e(tokens[2]);
       user_defined_funcs[tokens[1]] = e;
     }
 
     if (tokens[0] == "funclist") {
       for (auto &i : user_defined_funcs) {
-        std::cout << i.first << ": " << i.second << "\n";
+        std::cout << i.first << ": " << i.second.to_string() << "\n";
       }
     }
 

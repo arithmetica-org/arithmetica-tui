@@ -21,6 +21,8 @@ curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/
 
 | Feature | Description |
 | --- | --- |
+| Differentiation | Finds the derivative of an algebraic expression. |
+| Simplification | Simplifies any algebraic expression. |
 | Factorization | Factorize any single variable polynomial. |
 | Evaluation | Evaluate any arithmetic expression. |
 | Matrix Inversion | Find the inverse of a matrix. |

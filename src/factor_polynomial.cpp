@@ -1,4 +1,3 @@
-#include "algnum.hpp"
 #include <arithmetica.h>
 #include <arithmetica.hpp>
 #include <basic_math_operations.hpp>
@@ -11,30 +10,6 @@
 namespace arithmetica_factor_polynomial {
 typedef arithmetica::Fraction am_frac;
 typedef basic_math_operations::BMONum bmo_num;
-
-// Create a power compare function for algebraic_term to help sort the terms.
-bool power_compare(const algnum::algnum &a, const algnum::algnum &b) {
-  // Note that we're assuming each term only has one (or none) variable, and
-  // that the variable is the same.
-
-  // We are also assuming that the degrees are *never* the same.
-
-  std::string s_1 = "0", s_2 = "0";
-
-  if (!a.variables.empty()) {
-    algnum::algexpr p_1 = a.variables.begin()->power;
-    s_1 = p_1.latex();
-  }
-  if (!b.variables.empty()) {
-    algnum::algexpr p_2 = b.variables.begin()->power;
-    s_2 = p_2.latex();
-  }
-
-  // This is extremely hacky and won't work for variable powers ... sad, will
-  // fix later.
-  bool cond = basic_math_operations::subtract(s_1, s_2)[0] != '-';
-  return cond;
-}
 
 std::vector<am_frac> divide_polynomial(const std::vector<am_frac> &coefficients,
                                        am_frac root, am_frac &remainder) {
@@ -180,20 +155,26 @@ std::vector<std::string> multiply_polynomials_with_steps(
 
 std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
                               bool show_steps) {
-  algnum::algexpr e(expr.c_str());
-  if (e.size() == 0) {
+  arithmetica::algexpr e(expr);
+  if (e.is_numeric()) {
     std::cerr << "Error: " << expr << " is not a valid algebraic expression.\n";
     return "ERROR";
   }
-
-  // Combine like terms
-  e = e.combine_like_terms(e);
+  e = e.simplify();
 
   std::string variable = "?";
-  for (auto &i : e.expr) {
+  for (auto &i : e.terms()) {
     bool found = false;
-    for (auto &i : i.variables) {
-      variable = i.var;
+    i = i.simplify_term();
+    if (i.is_numeric()) {
+      continue;
+    }
+    for (auto &i : i.r->products()) {
+      if (i.func == "^") {
+        variable = i.l->to_string();
+      } else {
+        variable = i.to_string();
+      }
       found = true;
       break;
     }
@@ -208,30 +189,61 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
     return "ERROR";
   }
 
-  for (auto &i : e.expr) {
+  for (auto &i : e.terms()) {
     bool failed = false;
-    for (auto &i : i.variables) {
-      if (i.var != variable) {
+    i = i.simplify_term();
+    if (i.is_numeric()) {
+      continue;
+    }
+    for (auto &i : i.r->products()) {
+      std::string var;
+      if (i.func == "^") {
+        var = i.l->to_string();
+      } else {
+        var = i.to_string();
+      }
+      if (var != variable) {
         failed = true;
         break;
       }
     }
-    if (i.variables.size() > 1 || failed) {
+    if (failed) {
       std::cerr << "Error: " << expr
                 << " is not a single variable polynomial. Multi variable "
                    "polynomials are not supported yet!\n";
-      std::cerr << "Failed on term " << i.latex() << "\n";
+      std::cerr << "Failed on term " << i.to_string() << "\n";
       return "ERROR";
     }
   }
 
   // Sort the terms by degree.
-  auto expr_vec = e.expr;
-  std::sort(expr_vec.begin(), expr_vec.end(), power_compare);
+  auto expr_vec = e.terms();
+  auto get_pow = [&](arithmetica::algexpr term, arithmetica::algexpr base) {
+    for (auto &i : term.products()) {
+      if (i.func == "^") {
+        if (*i.l == base) {
+          return i.r->coeff;
+        }
+      } else if (i == base) {
+        return arithmetica::Fraction("1");
+      }
+    }
+    return arithmetica::Fraction("0");
+  };
+  std::sort(expr_vec.begin(), expr_vec.end(),
+            [&](const arithmetica::algexpr &a, const arithmetica::algexpr &b) {
+              return get_pow(b, arithmetica::algexpr(variable)) <
+                     get_pow(a, arithmetica::algexpr(variable));
+            });
+  for (auto &i : expr_vec) {
+    i = i.simplify_term();
+  }
 
   // This will also not work for variable powers
   int _size = std::stoi(
-      (bmo_num(expr_vec[0].variables.begin()->power.latex()) + bmo_num("1"))
+      (bmo_num(
+           get_pow(expr_vec[0], arithmetica::algexpr(variable)).to_string()) +
+       bmo_num("1"))
           .number);
   std::vector<am_frac> frac_coefficients;
   char **coefficients = (char **)malloc(sizeof(char *) * _size);
@@ -239,11 +251,12 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
   for (int i = 0; i < expr_vec.size(); i++) {
     if (i != 0) {
       std::string s_1 = "0", s_2 = "0";
-      if (!expr_vec[i - 1].variables.empty()) {
-        s_1 = expr_vec[i - 1].variables.begin()->power.latex();
+      if (!expr_vec[i - 1].is_numeric()) {
+        s_1 = get_pow(expr_vec[i - 1], arithmetica::algexpr(variable))
+                  .to_string();
       }
-      if (!expr_vec[i].variables.empty()) {
-        s_2 = expr_vec[i].variables.begin()->power.latex();
+      if (!expr_vec[i].is_numeric()) {
+        s_2 = get_pow(expr_vec[i], arithmetica::algexpr(variable)).to_string();
       }
       auto temp = bmo_num(s_1) - bmo_num(s_2);
       for (int j = 0; j < std::stoi(temp.number) - 1; j++) {
@@ -253,7 +266,9 @@ std::string factor_polynomial(std::string expr, std::vector<std::string> &steps,
       }
     }
 
-    std::string constant_str = expr_vec[i].constant.to_string();
+    std::string constant_str = expr_vec[i].l == nullptr
+                                   ? expr_vec[i].to_string()
+                                   : expr_vec[i].l->to_string();
     coefficients[ptr] =
         (char *)malloc(sizeof(char) * (constant_str.length() + 1));
     strcpy(coefficients[ptr], constant_str.c_str());

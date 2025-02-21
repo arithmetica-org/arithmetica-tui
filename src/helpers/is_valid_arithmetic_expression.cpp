@@ -1,6 +1,6 @@
 #include "helpers.hpp"
 
-bool is_valid_arithmetic_expression(const std::string &s) {
+bool is_valid_arithmetic_expression(const std::string &s, bool algebraic) {
   // If the input contains only numbers, (), [], {}, +-*/^ and all brackets are
   // correctly opened and closed, automatically eval This is to make it easier
   // for the user to use the program
@@ -29,6 +29,9 @@ bool is_valid_arithmetic_expression(const std::string &s) {
       }
     }
 
+    if (algebraic and std::isalpha(s[i])) {
+      continue;
+    }
     if (allowed.find(s[i]) == std::string::npos) {
       return false;
     }
