@@ -51,8 +51,8 @@ jobs:
       run: git submodule update --init --recursive
     - name: Compile arithmetica-tui for Linux
       run: |
-        curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/arithmetica-org/arithmetica/contents/install.sh | sudo bash
-        curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/basic_math_operations/contents/install.sh | sudo bash
+        curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/arithmetica-org/arithmetica/contents/install_linux.sh | sudo bash
+        curl -s -H "Accept: application/vnd.github.v3.raw" https://api.github.com/repos/avighnac/basic_math_operations/contents/install_linux.sh | sudo bash
         cmake --no-warn-unused-cli -DBUILD_MAIN_EXECUTABLE=ON -DARITHMETICA_TUI_TESTS=OFF -DBUILD_RELEASE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE -DCMAKE_BUILD_TYPE=Release -S . -B build -G "Unix Makefiles"
         cmake --build build --config Release --target all -j 10 --
     - name: Upload executable asset for Linux
